@@ -4,209 +4,146 @@ using UnityEngine.InputSystem;
 #endif
 
 /// <summary>
-/// Kontroluje strzelanie gracza - wykrywa input, tworzy pociski
-/// Dodaj ten skrypt do prefaba Player
+/// Odpowiada za strzelanie.
+/// BLOKUJE strzał, jeśli włączony jest Auto-Aim, a w pobliżu nie ma wrogów.
 /// </summary>
 public class WeaponController : MonoBehaviour
 {
-    [Header("Weapon Settings")]
-    [Tooltip("Prefab pocisku do wystrzeliwania")]
+    [Header("Input Settings")]
+    [Tooltip("Który gamepad steruje tą postacią? (0 = Gracz 1, 1 = Gracz 2)")]
+    public int gamepadIndex = 0;
+    public bool useGamepadByIndex = true;
+
+    [Header("Shooting Settings")]
     public GameObject bulletPrefab;
-    
-    [Tooltip("Punkt z którego wystrzeliwane są pociski (opcjonalnie, jeśli null = środek gracza)")]
     public Transform firePoint;
-    
-    [Tooltip("Bazowy czas między strzałami gdy gracz STOI (timescale ~0)")]
-    public float baseFireRate = 0.5f;
-    
-    [Tooltip("Minimalny czas między strzałami gdy gracz BIEGNIE (timescale = 1)")]
-    public float minFireDelay = 0.2f;
-    
-    [Tooltip("Czy używać New Input System")]
-    public bool useNewInputSystem = true;
+    public float bulletForce = 20f;
+    public float fireRate = 0.2f;
 
     [Header("References")]
-    [Tooltip("Referencja do celownika - znajdzie automatycznie jeśli puste")]
-    public CrosshairController crosshair;
+    public CrosshairController crosshairController;
 
-    [Header("Audio - Opcjonalnie")]
-    [Tooltip("Dźwięk strzału (opcjonalnie)")]
-    public AudioClip shootSound;
-    
-    private AudioSource audioSource;
-    private float lastFireTime = 0f;
-    private float fireRateCooldown = 0f;
-    private bool canShoot = true;
+    private float nextFireTime = 0f;
+    private Camera mainCamera;
 
     void Start()
     {
-        Debug.Log("WeaponController: Start() called");
-        
-        // Znajdź celownik automatycznie
-        if (crosshair == null)
-        {
-            crosshair = FindObjectOfType<CrosshairController>();
-            if (crosshair == null)
-            {
-                Debug.LogError("WeaponController: Nie znaleziono CrosshairController w scenie!");
-            }
-            else
-            {
-                Debug.Log("WeaponController: Znaleziono CrosshairController automatycznie");
-            }
-        }
+        mainCamera = Camera.main;
 
-        // Jeśli brak firePoint, użyj pozycji gracza
         if (firePoint == null)
         {
-            firePoint = transform;
-            Debug.Log("WeaponController: Używam pozycji gracza jako firePoint");
+            firePoint = transform; 
+            Debug.LogWarning("WeaponController: Brak Fire Point! Strzelam ze środka gracza.");
         }
 
-        // Setup audio
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null && shootSound != null)
+        if (crosshairController == null)
         {
-            audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.playOnAwake = false;
-        }
-
-        // Sprawdź czy bulletPrefab jest przypisany
-        if (bulletPrefab == null)
-        {
-            Debug.LogError("WeaponController: Bullet Prefab NIE JEST PRZYPISANY! Przypisz go w Inspectorze!");
-        }
-        else
-        {
-            Debug.Log($"WeaponController: Bullet Prefab przypisany: {bulletPrefab.name}");
+            crosshairController = FindObjectOfType<CrosshairController>();
         }
     }
 
     void Update()
     {
-        // KLUCZOWE: Zmniejsz cooldown każdą klatkę (skalowane przez GameTime.timescale)
-        if (fireRateCooldown > 0f)
-        {
-            // Cooldown zmniejsza się szybciej gdy się ruszasz (GameTime.timescale wyższy)
-            fireRateCooldown -= Time.deltaTime * GameTime.timescale;
-        }
-
-        HandleShootInput();
+        HandleShooting();
     }
 
-    void HandleShootInput()
+    void HandleShooting()
     {
-        // Sprawdź czy cooldown minął
-        bool canFireNow = fireRateCooldown <= 0f && canShoot;
-        
-        bool shootPressed = false;
+        bool shootInput = false;
 
-        // ZAWSZE sprawdź klasyczny input jako podstawę (działa zawsze)
-        if (Input.GetMouseButtonDown(0)) // 0 = LPM
-        {
-            shootPressed = true;
-            Debug.Log("WeaponController: Wykryto LPM (Input.GetMouseButtonDown)");
-        }
-
-        // Dodatkowo sprawdź New Input System jeśli włączony
-        if (!shootPressed && useNewInputSystem)
-        {
 #if ENABLE_INPUT_SYSTEM
-            // Sprawdź input z myszy
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        Gamepad myGamepad = GetGamepad();
+        
+        // --- SPRAWDZENIE BLOKADY STRZAŁU ---
+        // Sprawdzamy czy celownik pozwala nam strzelić
+        if (crosshairController != null)
+        {
+            // Jeśli:
+            // 1. Używamy Gamepada (IsUsingGamepad)
+            // 2. Auto Aim jest włączony (IsAutoAimEnabled)
+            // 3. I NIE MAMY CELU (!HasActiveTarget)
+            // ... to blokujemy strzelanie.
+            if (crosshairController.IsUsingGamepad() && 
+                crosshairController.IsAutoAimEnabled() && 
+                !crosshairController.HasActiveTarget())
             {
-                shootPressed = true;
-                Debug.Log("WeaponController: Wykryto LPM (New Input System)");
+                // RETURN - przerywamy funkcję, nie sprawdzamy inputu
+                return; 
             }
-            
-            // Sprawdź input z gamepada
-            if (Gamepad.current != null && Gamepad.current.rightTrigger.wasPressedThisFrame)
-            {
-                shootPressed = true;
-                Debug.Log("WeaponController: Wykryto RT gamepad");
-            }
-#endif
         }
+        // -----------------------------------
 
-        if (shootPressed && canFireNow)
+        if (myGamepad != null)
+        {
+            if (myGamepad.rightShoulder.isPressed) 
+            {
+                shootInput = true;
+            }
+        }
+        
+        if (gamepadIndex == 0 && !shootInput && Mouse.current != null && Mouse.current.leftButton.isPressed)
+        {
+            shootInput = true;
+        }
+#else
+        if (Input.GetButton("Fire1")) shootInput = true;
+#endif
+
+        if (shootInput && Time.time >= nextFireTime)
         {
             Shoot();
+            nextFireTime = Time.time + fireRate;
         }
-        else if (shootPressed && !canFireNow)
+    }
+
+    Gamepad GetGamepad()
+    {
+#if ENABLE_INPUT_SYSTEM
+        if (useGamepadByIndex)
         {
-            if (fireRateCooldown > 0f)
+            if (Gamepad.all.Count > gamepadIndex)
             {
-                Debug.Log($"WeaponController: Cooldown aktywny ({fireRateCooldown:F2}s pozostało)");
+                return Gamepad.all[gamepadIndex];
             }
-            else if (!canShoot)
-            {
-                Debug.Log("WeaponController: Nie można strzelać (canShoot = false)");
-            }
+            return null;
         }
+        return Gamepad.current;
+#endif
+        return null;
     }
 
     void Shoot()
     {
-        if (bulletPrefab == null)
-        {
-            Debug.LogError("WeaponController: Nie można strzelić - brak Bullet Prefab!");
-            return;
-        }
+        if (bulletPrefab == null || firePoint == null) return;
 
-        if (crosshair == null)
-        {
-            Debug.LogError("WeaponController: Nie można strzelić - brak Crosshair!");
-            return;
-        }
+        Vector3 targetPos = Vector3.zero;
 
-        Vector2 direction = (crosshair.transform.position - firePoint.position).normalized;
-
-        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
-        BulletController bulletController = bullet.GetComponent<BulletController>();
-        
-        if (bulletController != null)
+        if (crosshairController != null)
         {
-            bulletController.Initialize(direction);
+            targetPos = crosshairController.GetCrosshairPosition();
         }
         else
         {
-            Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
-            if (bulletRb != null)
-            {
-                bulletRb.velocity = direction * 15f * GameTime.timescale;
-            }
+             Vector3 mousePos = Input.mousePosition;
+             mousePos.z = -mainCamera.transform.position.z;
+             targetPos = mainCamera.ScreenToWorldPoint(mousePos);
         }
 
-        if (audioSource != null && shootSound != null)
-        {
-            audioSource.PlayOneShot(shootSound);
-        }
-
-        // Ustaw cooldown: Im wyższy timescale (szybciej się ruszasz), tym KRÓTSZY cooldown
-        // timescale = 0.0 (stoisz) → cooldown = baseFireRate (0.5s) = WOLNO
-        // timescale = 1.0 (biegniesz) → cooldown = minFireDelay (0.2s) = SZYBKO
-        float calculatedCooldown = Mathf.Lerp(baseFireRate, minFireDelay, GameTime.timescale);
-        fireRateCooldown = calculatedCooldown;
+        Vector2 direction = (targetPos - firePoint.position).normalized;
         
-        lastFireTime = Time.time;
-        Debug.Log($"Shot fired! Cooldown: {calculatedCooldown:F2}s | Player speed (timescale): {GameTime.timescale:F2}");
-    }
+        // Tworzenie pocisku
+        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
 
-    /// <summary>
-    /// Włącz/wyłącz możliwość strzelania (np. podczas przeładowania)
-    /// </summary>
-    public void SetCanShoot(bool value)
-    {
-        canShoot = value;
-    }
-
-    // Debug - rysuj linię strzału w edytorze
-    void OnDrawGizmos()
-    {
-        if (crosshair != null && firePoint != null)
+        // Inicjalizacja pocisku (przekazanie kierunku do BulletController)
+        BulletController bulletScript = bullet.GetComponent<BulletController>();
+        if (bulletScript != null)
         {
-            Gizmos.color = Color.red;
-            Gizmos.DrawLine(firePoint.position, crosshair.GetCrosshairPosition());
+            bulletScript.Initialize(direction);
+        }
+        else
+        {
+            Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
+            if (rb != null) rb.velocity = direction * bulletForce;
         }
     }
 }

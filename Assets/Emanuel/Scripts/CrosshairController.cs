@@ -5,14 +5,19 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Kontroluje pozycję celownika.
-/// Na gamepadzie działa jak Target Lock: pojawia się tylko gdy wykryje wroga.
+/// Zawiera logikę Auto-Aim i informuje broń, czy ma cel.
 /// </summary>
-[RequireComponent(typeof(SpriteRenderer))] // Wymaga komponentu SpriteRenderer do znikania
+[RequireComponent(typeof(SpriteRenderer))]
 public class CrosshairController : MonoBehaviour
 {
     [Header("Input Settings")]
     public bool useNewInputSystem = true;
     public float gamepadCrosshairDistance = 5f;
+
+    [Header("Multiplayer Settings")]
+    [Tooltip("Który pad steruje tym celownikiem? (0 = pierwszy, 1 = drugi itd.)")]
+    public int gamepadIndex = 0;
+    public bool useGamepadByIndex = true;
     
     [Header("Auto Aim Settings")]
     [Tooltip("Włącz/Wyłącz Auto Aim dla gamepada")]
@@ -30,7 +35,10 @@ public class CrosshairController : MonoBehaviour
     private Camera mainCamera;
     private Vector3 targetPosition;
     private bool isUsingGamepad = false;
-    private SpriteRenderer spriteRenderer; // Do ukrywania celownika
+    private SpriteRenderer spriteRenderer;
+    
+    // --- NOWA ZMIENNA: Czy aktualnie namierzamy wroga? ---
+    private bool hasActiveTarget = false;
 
     void Start()
     {
@@ -60,11 +68,12 @@ public class CrosshairController : MonoBehaviour
         if (useNewInputSystem)
         {
 #if ENABLE_INPUT_SYSTEM
-            if (Gamepad.current != null)
+            Gamepad myGamepad = GetGamepad();
+
+            if (myGamepad != null)
             {
-                Vector2 rightStick = Gamepad.current.rightStick.ReadValue();
+                Vector2 rightStick = myGamepad.rightStick.ReadValue();
                 
-                // Gamepad jest aktywny jeśli ruszamy gałką LUB auto-aim jest włączony
                 if (rightStick.magnitude > 0.1f || useGamepadAutoAim) 
                 {
                     isUsingGamepad = true;
@@ -72,9 +81,18 @@ public class CrosshairController : MonoBehaviour
                     return;
                 }
             }
-            // Jeśli nie gamepad, to mysz
-            isUsingGamepad = false;
-            HandleMouseInput();
+            
+            if (gamepadIndex == 0)
+            {
+                isUsingGamepad = false;
+                HandleMouseInput();
+            }
+            else
+            {
+                // Gracz 2 bez inputu -> brak celu
+                if (spriteRenderer != null) spriteRenderer.enabled = false;
+                hasActiveTarget = false;
+            }
 #else
             HandleMouseInput();
 #endif
@@ -85,10 +103,24 @@ public class CrosshairController : MonoBehaviour
         }
     }
 
+    Gamepad GetGamepad()
+    {
+#if ENABLE_INPUT_SYSTEM
+        if (useGamepadByIndex)
+        {
+            if (Gamepad.all.Count > gamepadIndex) return Gamepad.all[gamepadIndex];
+            return null;
+        }
+        return Gamepad.current;
+#endif
+        return null;
+    }
+
     void HandleMouseInput()
     {
-        // MYSZKA: Zawsze pokazuj celownik
+        // Mysz zawsze "ma cel" (celujesz ręcznie)
         if (spriteRenderer != null) spriteRenderer.enabled = true;
+        hasActiveTarget = true; 
 
         Vector3 mousePos = Input.mousePosition;
         mousePos.z = Mathf.Abs(mainCamera.transform.position.z);
@@ -102,8 +134,6 @@ public class CrosshairController : MonoBehaviour
         if (playerTransform == null) return;
 
         Transform closestEnemy = null;
-
-        // Szukamy wroga tylko jeśli auto-aim jest włączony
         if (useGamepadAutoAim)
         {
             closestEnemy = GetClosestEnemy();
@@ -111,35 +141,30 @@ public class CrosshairController : MonoBehaviour
 
         if (closestEnemy != null)
         {
-            // SYTUACJA 1: Znaleziono wroga
-            // Pokaż celownik
+            // MAMY CEL
+            hasActiveTarget = true;
             if (spriteRenderer != null) spriteRenderer.enabled = true;
-
-            // Namierzanie wroga
+            
             Vector3 enemyPos = closestEnemy.position;
             enemyPos.z = 0f;
-            
-            // Płynny ruch do wroga
             transform.position = Vector3.Lerp(transform.position, enemyPos, Time.deltaTime * autoAimSmoothing);
         }
         else
         {
-            // SYTUACJA 2: Brak wroga w zasięgu
-            // Ukryj celownik (zrób go niewidzialnym)
+            // BRAK CELU
+            hasActiveTarget = false;
+            
+            // Jeśli nie ma celu, ukrywamy celownik
             if (spriteRenderer != null) spriteRenderer.enabled = false;
-
-            // Opcjonalnie: Trzymaj celownik na graczu (niewidoczny), żeby startował z dobrej pozycji
+            
+            // Celownik wraca do gracza
             transform.position = playerTransform.position;
         }
     }
 
-    /// <summary>
-    /// Skanuje otoczenie i zwraca transform najbliższego wroga z TAGIEM "Enemy"
-    /// </summary>
     Transform GetClosestEnemy()
     {
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(playerTransform.position, autoAimRange);
-
         Transform bestTarget = null;
         float closestDistanceSqr = Mathf.Infinity;
         Vector3 currentPos = playerTransform.position;
@@ -158,7 +183,6 @@ public class CrosshairController : MonoBehaviour
                 }
             }
         }
-
         return bestTarget;
     }
 
@@ -171,15 +195,19 @@ public class CrosshairController : MonoBehaviour
         }
     }
 
-    public Vector3 GetCrosshairPosition()
-    {
-        return transform.position;
-    }
+    // --- PUBLICZNE METODY DLA WEAPON CONTROLLERA ---
+    public Vector3 GetCrosshairPosition() => transform.position;
+    public bool IsUsingGamepad() => isUsingGamepad;
+    
+    /// <summary>
+    /// Czy celownik aktualnie widzi cel (lub jest myszką)?
+    /// </summary>
+    public bool HasActiveTarget() => hasActiveTarget;
 
-    public bool IsUsingGamepad()
-    {
-        return isUsingGamepad;
-    }
+    /// <summary>
+    /// Czy tryb Auto-Aim jest włączony w ustawieniach?
+    /// </summary>
+    public bool IsAutoAimEnabled() => useGamepadAutoAim;
 
     void OnDestroy() => Cursor.visible = true;
     void OnApplicationFocus(bool hasFocus) { if (hasFocus) Cursor.visible = false; }

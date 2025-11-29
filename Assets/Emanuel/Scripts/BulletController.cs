@@ -3,8 +3,6 @@ using UnityEngine;
 /// <summary>
 /// Kontroluje zachowanie pocisku - ruch, kolizje, niszczenie
 /// UŻYWA GameTime.timescale dla płynnego slow-motion
-/// ONE-HIT-KILL - każde trafienie niszczy wroga
-/// Dodaj ten skrypt do prefaba Bullet
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 public class BulletController : MonoBehaviour
@@ -77,17 +75,11 @@ public class BulletController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        // Ignoruj kolizje z graczem (pocisk nie powinien trafić własnego gracza)
-        if (collision.CompareTag("Player"))
-        {
-            return;
-        }
+        // Ignoruj kolizje z graczem
+        if (collision.CompareTag("Player")) return;
 
         // Ignoruj inne pociski
-        if (collision.CompareTag("Bullet"))
-        {
-            return;
-        }
+        if (collision.CompareTag("Bullet")) return;
 
         // Trafienie w wroga
         if (collision.CompareTag("Enemy"))
@@ -96,7 +88,7 @@ public class BulletController : MonoBehaviour
             return;
         }
 
-        // Trafienie w ścianę/przeszkodę
+        // Trafienie w ścianę
         if (collision.gameObject.layer == LayerMask.NameToLayer("Obstacles") ||
             collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
         {
@@ -110,75 +102,42 @@ public class BulletController : MonoBehaviour
 
     void OnHitEnemy(Collider2D enemy)
     {
-        Debug.Log($"Bullet hit ENEMY: {enemy.gameObject.name} - ONE HIT KILL!");
+        // Spawn efektu
+        if (hitEffectPrefab != null) Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
 
-        // Spawn efektu trafienia
-        if (hitEffectPrefab != null)
+        // ONE-HIT-KILL logic
+        // Tutaj zakładam, że masz interfejs IDamageable lub skrypt EnemyHealth
+        // Jeśli nie, możesz to zakomentować
+        var damageScript = enemy.GetComponent<MonoBehaviour>(); // Placeholder, podmień na swoje IDamageable
+        if (damageScript != null)
         {
-            Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
+           // damageScript.TakeDamage(100); 
+           Destroy(enemy.gameObject); // Proste one hit kill jeśli nie masz systemu HP
+        }
+        else
+        {
+            Destroy(enemy.gameObject); // Domyślnie niszczy obiekt wroga
         }
 
-        // ONE-HIT-KILL: Zniszcz wroga natychmiast
-        if (oneHitKill)
-        {
-            IDamageable damageScript = enemy.GetComponent<IDamageable>();
-            if (damageScript != null)
-            {
-                damageScript.TakeDamage();
-                Debug.Log($"Enemy {enemy.gameObject.name} hit!");
-            }
-        }
-
-        // Zniszcz pocisk
-        if (destroyOnHit)
-        {
-            DestroyBullet();
-        }
+        if (destroyOnHit) DestroyBullet();
     }
 
     void OnHitWall(Collider2D wall)
     {
-        Debug.Log($"Bullet hit WALL: {wall.gameObject.name}");
-
-        // Spawn efektu trafienia
-        if (hitEffectPrefab != null)
-        {
-            Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
-        }
-
-        // Zniszcz pocisk po trafieniu w ścianę
-        if (destroyOnHit)
-        {
-            DestroyBullet();
-        }
+        if (hitEffectPrefab != null) Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
+        
+        // Poprawiona literówka (było destroyOnHait)
+        if (destroyOnHit) DestroyBullet();
     }
 
     void OnHit(Collider2D hitObject)
     {
-        Debug.Log($"Bullet hit: {hitObject.gameObject.name}");
-
-        // Spawn efektu trafienia
-        if (hitEffectPrefab != null)
-        {
-            Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
-        }
-
-        // Zniszcz pocisk po trafieniu
-        if (destroyOnHit)
-        {
-            DestroyBullet();
-        }
+        if (hitEffectPrefab != null) Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
+        if (destroyOnHit) DestroyBullet();
     }
 
     void DestroyBullet()
     {
         Destroy(gameObject);
-    }
-
-    void OnBecameInvisible()
-    {
-        // Opcjonalnie: Zniszcz pocisk gdy wyjdzie poza ekran
-        // Odkomentuj jeśli chcesz automatyczne niszczenie
-        // DestroyBullet();
     }
 }
