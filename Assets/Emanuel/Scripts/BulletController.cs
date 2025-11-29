@@ -30,10 +30,12 @@ public class BulletController : MonoBehaviour
     private Rigidbody2D rb;
     private Vector2 baseDirection; // Bazowy kierunek (nie skalowany)
     private float spawnTime;
+    private TrailController trailController; // Referencja do smugi
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        trailController = GetComponent<TrailController>();
         spawnTime = Time.time;
     }
 
@@ -172,6 +174,12 @@ public class BulletController : MonoBehaviour
 
     void DestroyBullet()
     {
+        // Opcjonalnie: wyczyść smugę przed zniszczeniem
+        if (trailController != null)
+        {
+            trailController.ClearTrail();
+        }
+        
         Destroy(gameObject);
     }
 
