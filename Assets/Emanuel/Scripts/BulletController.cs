@@ -12,10 +12,10 @@ public class BulletController : MonoBehaviour
     [Header("Bullet Settings")]
     [Tooltip("Bazowa prędkość pocisku (będzie skalowana przez GameTime.timescale)")]
     public float bulletSpeed = 15f;
-    
+
     [Tooltip("Czas życia pocisku w sekundach")]
     public float lifetime = 5f;
-    
+
     [Tooltip("Czy pocisk niszczy się po trafieniu")]
     public bool destroyOnHit = true;
 
@@ -44,7 +44,7 @@ public class BulletController : MonoBehaviour
     public void Initialize(Vector2 shootDirection)
     {
         baseDirection = shootDirection.normalized;
-        
+
         // Ustaw początkową prędkość (skalowaną przez GameTime.timescale)
         if (rb != null)
         {
@@ -97,7 +97,7 @@ public class BulletController : MonoBehaviour
         }
 
         // Trafienie w ścianę/przeszkodę
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Obstacles") || 
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Obstacles") ||
             collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
         {
             OnHitWall(collision);
@@ -121,8 +121,12 @@ public class BulletController : MonoBehaviour
         // ONE-HIT-KILL: Zniszcz wroga natychmiast
         if (oneHitKill)
         {
-            Destroy(enemy.gameObject);
-            Debug.Log($"Enemy {enemy.gameObject.name} destroyed!");
+            IDamageable damageScript = enemy.GetComponent<IDamageable>();
+            if (damageScript != null)
+            {
+                damageScript.TakeDamage();
+                Debug.Log($"Enemy {enemy.gameObject.name} hit!");
+            }
         }
 
         // Zniszcz pocisk

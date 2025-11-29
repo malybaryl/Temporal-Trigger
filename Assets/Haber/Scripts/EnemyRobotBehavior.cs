@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 
-public class EnemyRobotBehavior : MonoBehaviour
+public class EnemyRobotBehavior : MonoBehaviour, IDamageable
 {
     private EnemyPathfinding pathfindScript;
     [SerializeField] float minActivationRange = 10f;
@@ -130,5 +130,12 @@ public class EnemyRobotBehavior : MonoBehaviour
             verticalSign = -1;
 
         return verticalSign;
+    }
+
+    public void TakeDamage()
+    {
+        //play death anim
+
+        Destroy(this.gameObject);
     }
 }
