@@ -258,10 +258,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Crosshair
       objectReference: {fileID: 0}
-    - target: {fileID: 6881961818627429497, guid: a58cde54c602045a5a1de57a2b4cac6c, type: 3}
-      propertyPath: playerTransform
-      value: 
-      objectReference: {fileID: 1223214808}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -406,25 +402,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &711000387 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5626672739019637437, guid: 432864baee75fb24ab08836b1fc907d7, type: 3}
-  m_PrefabInstance: {fileID: 340718950279569510}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &711000394
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 711000387}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d05532b0f8deb7c4987a96f9169bc0d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bulletPrefab: {fileID: 0}
-  fireClip: {fileID: 0}
 --- !u!1 &832450438
 GameObject:
   m_ObjectHideFlags: 0
@@ -563,7 +540,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5401828575992761974, guid: 520c8a5a24eda674bac98fd1efcdfb71, type: 3}
       propertyPath: orthographic size
-      value: 4.7513266
+      value: 4.0546875
       objectReference: {fileID: 0}
     - target: {fileID: 6238082012091097542, guid: 520c8a5a24eda674bac98fd1efcdfb71, type: 3}
       propertyPath: m_LocalPosition.x
@@ -759,17 +736,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 364902385208106071, guid: f40eef895df994b00811d977d45051dd, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2369340556187937772, guid: f40eef895df994b00811d977d45051dd, type: 3}
       propertyPath: m_Name
       value: GameManager
-      objectReference: {fileID: 0}
-    - target: {fileID: 2369340556187937772, guid: f40eef895df994b00811d977d45051dd, type: 3}
-      propertyPath: m_TagString
-      value: GameController
       objectReference: {fileID: 0}
     - target: {fileID: 8170170463925543036, guid: f40eef895df994b00811d977d45051dd, type: 3}
       propertyPath: m_LocalPosition.x
@@ -811,56 +780,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 364902385208106071, guid: f40eef895df994b00811d977d45051dd, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 2369340556187937772, guid: f40eef895df994b00811d977d45051dd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1989772087}
-    - targetCorrespondingSourceObject: {fileID: 2369340556187937772, guid: f40eef895df994b00811d977d45051dd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1989772091}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f40eef895df994b00811d977d45051dd, type: 3}
---- !u!1 &1989772086 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2369340556187937772, guid: f40eef895df994b00811d977d45051dd, type: 3}
-  m_PrefabInstance: {fileID: 1989772085}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1989772087
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1989772086}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2320f7acb13c39d458fa0d4c9b182cb8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gridWidth: 20
-  gridHeight: 15
-  nodeSize: 0.5
-  presentTimelineCenter: {x: 0, y: 0}
-  futureTimelineCenter: {x: 20, y: 0}
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 128
-  debugShowGrid: 0
---- !u!114 &1989772091
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1989772086}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f3f0b425707083428eefe330c8a0e5c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &340718950279569510
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -916,10 +840,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5626672739019637437, guid: 432864baee75fb24ab08836b1fc907d7, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 711000394}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 432864baee75fb24ab08836b1fc907d7, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
