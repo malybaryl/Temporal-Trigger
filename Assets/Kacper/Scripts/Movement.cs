@@ -45,6 +45,13 @@ public class Movement : MonoBehaviour
     [SerializeField] private Animator anim;
     private bool isMoving = false;
     private bool isFacingFront = true;
+    
+    // --- ZMIENNE DO FLIPOWANIA ---
+    [Header("Rotation Settings")]
+    [SerializeField] private bool isFacingRight = true; // Domyślnie zakładamy, że sprite patrzy w prawo
+    
+    [Tooltip("Zaznacz to, jeśli postać stojąc przodem obraca się odwrotnie do myszki. To naprawi problem.")]
+    public bool fixFrontRotation = true; 
     #endregion
 
     #region PRIVATE VARIABLES
@@ -58,6 +65,9 @@ public class Movement : MonoBehaviour
     private Coroutine currentFadeCoroutine = null;
     private float targetVolume = 1f;
     private AudioClip lastPlayedClip = null;
+    
+    // Kamera potrzebna do śledzenia myszki
+    private Camera mainCamera; 
 
     [SerializeField] private bool isDead = false; 
     #endregion
@@ -77,21 +87,7 @@ public class Movement : MonoBehaviour
     {
         if (device is Gamepad)
         {
-            switch (change)
-            {
-                case InputDeviceChange.Added:
-                    Debug.Log($"Gamepad added: {device.displayName}");
-                    break;
-                case InputDeviceChange.Removed:
-                    Debug.Log($"Gamepad removed: {device.displayName}");
-                    break;
-                case InputDeviceChange.Disconnected:
-                    Debug.Log($"Gamepad disconnected: {device.displayName}");
-                    break;
-                case InputDeviceChange.Reconnected:
-                    Debug.Log($"Gamepad reconnected: {device.displayName}");
-                    break;
-            }
+            // Opcjonalne logi pada
         }
     }
 #endif
@@ -102,7 +98,9 @@ public class Movement : MonoBehaviour
         if (rb == null) rb = gameObject.AddComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
         rb.constraints = RigidbodyConstraints2D.FreezeRotation;
-        
+
+        // Pobranie głównej kamery do obliczeń pozycji myszki
+        mainCamera = Camera.main;
     }
 
     void Update()
@@ -114,8 +112,15 @@ public class Movement : MonoBehaviour
         input = Vector2.ClampMagnitude(input, 1f);
         targetVelocity = input * moveSpeed;
 
-        UpdateAnimation(input);   // aktualizacja parametrów Animatora
-        HandleFootsteps();        // logika kroków
+        // 1. Aktualizacja animacji (chodzenie, przód/tył)
+        // Musimy to zrobić PRZED obracaniem, żeby wiedzieć czy stoimy przodem (isFacingFront)
+        UpdateAnimation(input);   
+
+        // 2. Obracanie w stronę kursora (Flip) z poprawką
+        HandleRotationToCursor();
+        
+        // 3. Logika kroków i TimeControllera
+        HandleFootsteps();        
     }
 
     void FixedUpdate()
@@ -137,14 +142,74 @@ public class Movement : MonoBehaviour
         }
     }
 
-    // --- NOWA METODA DO ZABIJANIA ---
-    /// <summary>
-    /// Wywołaj tę funkcję (np. z innego skryptu Health), aby zabić gracza.
-    /// </summary>
-    [ContextMenu("Kill Player (Test)")] // Pozwala testować w Inspectorze prawym przyciskiem myszy
+    // --- POPRAWIONA METODA: OBRACANIE DO KURSORA ---
+    private void HandleRotationToCursor()
+    {
+        if (mainCamera == null) return;
+
+        Vector3 mousePosition = Vector3.zero;
+
+        // Pobranie pozycji myszki
+#if ENABLE_INPUT_SYSTEM
+        if (Mouse.current != null)
+        {
+            Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
+            mousePosition = mainCamera.ScreenToWorldPoint(mouseScreenPos);
+        }
+        else 
+        {
+             return; // Brak myszki
+        }
+#else
+        mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+#endif
+
+        // Sprawdzamy: Czy myszka jest po prawej stronie gracza?
+        bool mouseIsRight = mousePosition.x > transform.position.x;
+        
+        // Domyślnie chcemy patrzeć tam gdzie myszka (czyli jeśli myszka po prawej -> patrzymy w prawo)
+        bool shouldFaceRight = mouseIsRight;
+
+        // --- FIX: NAPRAWA ODWROTNEGO OBRACANIA PRZY WIDOKU Z PRZODU ---
+        if (fixFrontRotation && isFacingFront)
+        {
+            // Jeśli stoimy przodem i zaznaczyliśmy opcję naprawy,
+            // odwracamy logikę "gdzie powinien patrzeć".
+            shouldFaceRight = !shouldFaceRight;
+        }
+        // -------------------------------------------------------------
+
+        // Teraz wykonujemy Flip tylko jeśli aktualny kierunek jest inny niż ten wyliczony
+        if (shouldFaceRight && !isFacingRight)
+        {
+            Flip();
+        }
+        else if (!shouldFaceRight && isFacingRight)
+        {
+            Flip();
+        }
+    }
+
+    // --- METODY PUBLICZNE ---
+
+    public Vector3 GetPosition()
+    {
+        return transform.position;
+    }
+
+    public void Flip()
+    {
+        isFacingRight = !isFacingRight;
+        Vector3 theScale = transform.localScale;
+        theScale.x *= -1;
+        transform.localScale = theScale;
+    }
+
+    // --- METODA DO ZABIJANIA ---
+    [ContextMenu("Kill Player (Test)")] 
     public void Die()
     {
-        if (isDead) return; // Jeśli już nie żyje, nie rób tego ponownie
+        if (isDead) return; 
 
         isDead = true;
         targetVelocity = Vector2.zero;
@@ -154,21 +219,19 @@ public class Movement : MonoBehaviour
         if (anim != null)
         {
             anim.SetTrigger("dead");
-            anim.SetBool("moving", false); // Dla pewności wyłączamy chodzenie
+            anim.SetBool("moving", false); 
         }
 
-        // Zatrzymanie dźwięków kroków
         if (footstepSource != null) footstepSource.Stop();
         
         Debug.Log("Player is dead. Input disabled.");
     }
 
-    // Opcjonalnie: Metoda do ożywiania
     [ContextMenu("Revive Player (Test)")]
     public void Revive()
     {
         isDead = false;
-        if (anim != null) anim.Play("Idle"); // Lub inny stan początkowy
+        if (anim != null) anim.Play("Idle"); 
         Debug.Log("Player revived.");
     }
 
@@ -224,9 +287,15 @@ public class Movement : MonoBehaviour
     {
         isMoving = input.sqrMagnitude > 0.01f;
 
-        // Facing front/back logic
-        if (Mathf.Abs(input.y) > Mathf.Abs(input.x))
-            isFacingFront = input.y <= 0; // dół = front (true), góra = back (false)
+        // Ustawianie kierunku (Góra/Dół) na podstawie inputu klawiatury/pada
+        // Zmieniamy isFacingFront tylko jeśli faktycznie jest wciśnięty przycisk góra/dół
+        if (Mathf.Abs(input.y) > 0.1f) 
+        {
+            if (Mathf.Abs(input.y) > Mathf.Abs(input.x))
+            {
+                isFacingFront = input.y <= 0; // dół = front (true), góra = back (false)
+            }
+        }
 
         if (anim != null)
         {
@@ -244,12 +313,13 @@ public class Movement : MonoBehaviour
         float speed = targetVelocity.magnitude;
         bool currentlyMoving = speed >= footstepMinSpeed;
 
-        // *** NOWE: Powiadom TimeController o ruchu gracza ***
+        // --- TIME CONTROLLER INTEGRATION ---
         TimeController timeController = FindObjectOfType<TimeController>();
         if (timeController != null)
         {
             timeController.RegisterPlayerMovement(gameObject, currentlyMoving);
         }
+        // -----------------------------------
 
         if (currentlyMoving)
         {
@@ -325,7 +395,7 @@ public class Movement : MonoBehaviour
     }
     #endregion
 
-    #region PUBLIC METHODS
+    #region PUBLIC METHODS (GAMEPAD)
     public void SelectGamepadByIndex(int index)
     {
 #if ENABLE_INPUT_SYSTEM
@@ -334,11 +404,7 @@ public class Movement : MonoBehaviour
             selectedGamepadIndex = index;
             useGamepadByIndex = true;
             autoSelectLastUsedGamepad = false;
-            Debug.Log($"Selected gamepad index {index}: {Gamepad.all[index].displayName}");
         }
-        else Debug.LogWarning($"No gamepad at index {index}. Count={Gamepad.all.Count}");
-#else
-        Debug.LogWarning("Cannot select gamepad by index: New Input System not enabled in this build.");
 #endif
     }
 
