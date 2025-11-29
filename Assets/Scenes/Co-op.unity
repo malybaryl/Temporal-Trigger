@@ -561,7 +561,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5401828575992761974, guid: 520c8a5a24eda674bac98fd1efcdfb71, type: 3}
       propertyPath: orthographic size
-      value: 2.8125
+      value: 4.7513266
       objectReference: {fileID: 0}
     - target: {fileID: 6238082012091097542, guid: 520c8a5a24eda674bac98fd1efcdfb71, type: 3}
       propertyPath: m_LocalPosition.x
@@ -905,6 +905,38 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1781100216943964611, guid: f40eef895df994b00811d977d45051dd, type: 3}
+      propertyPath: nodeSize
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 1781100216943964611, guid: f40eef895df994b00811d977d45051dd, type: 3}
+      propertyPath: gridWidth
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 1781100216943964611, guid: f40eef895df994b00811d977d45051dd, type: 3}
+      propertyPath: gridHeight
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 1781100216943964611, guid: f40eef895df994b00811d977d45051dd, type: 3}
+      propertyPath: debugShowGrid
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1781100216943964611, guid: f40eef895df994b00811d977d45051dd, type: 3}
+      propertyPath: futureTimelineCenter.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1781100216943964611, guid: f40eef895df994b00811d977d45051dd, type: 3}
+      propertyPath: futureTimelineCenter.y
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 1781100216943964611, guid: f40eef895df994b00811d977d45051dd, type: 3}
+      propertyPath: presentTimelineCenter.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1781100216943964611, guid: f40eef895df994b00811d977d45051dd, type: 3}
+      propertyPath: presentTimelineCenter.y
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 2369340556187937772, guid: f40eef895df994b00811d977d45051dd, type: 3}
       propertyPath: m_Name
       value: GameManager
@@ -960,9 +992,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 2369340556187937772, guid: f40eef895df994b00811d977d45051dd, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1989772087}
-    - targetCorrespondingSourceObject: {fileID: 2369340556187937772, guid: f40eef895df994b00811d977d45051dd, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1989772091}
   m_SourcePrefab: {fileID: 100100000, guid: f40eef895df994b00811d977d45051dd, type: 3}
 --- !u!1 &1989772086 stripped
@@ -970,27 +999,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 2369340556187937772, guid: f40eef895df994b00811d977d45051dd, type: 3}
   m_PrefabInstance: {fileID: 1989772085}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1989772087
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1989772086}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2320f7acb13c39d458fa0d4c9b182cb8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gridWidth: 20
-  gridHeight: 15
-  nodeSize: 0.5
-  presentTimelineCenter: {x: 0, y: 0}
-  futureTimelineCenter: {x: 20, y: 0}
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 128
-  debugShowGrid: 0
 --- !u!114 &1989772091
 MonoBehaviour:
   m_ObjectHideFlags: 0
