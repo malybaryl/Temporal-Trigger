@@ -2,27 +2,33 @@ using UnityEngine;
 
 /// <summary>
 /// Kontroluje zachowanie pocisku - ruch, kolizje, niszczenie
+/// UŻYWA GameTime.timescale dla płynnego slow-motion
+/// ONE-HIT-KILL - każde trafienie niszczy wroga
 /// Dodaj ten skrypt do prefaba Bullet
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 public class BulletController : MonoBehaviour
 {
     [Header("Bullet Settings")]
-    [Tooltip("Prędkość pocisku")]
+    [Tooltip("Bazowa prędkość pocisku (będzie skalowana przez GameTime.timescale)")]
     public float bulletSpeed = 15f;
     
-    [Tooltip("Czas życia pocisku w sekundach (0 = nieskończony)")]
+    [Tooltip("Czas życia pocisku w sekundach")]
     public float lifetime = 5f;
     
     [Tooltip("Czy pocisk niszczy się po trafieniu")]
     public bool destroyOnHit = true;
+
+    [Header("One-Hit-Kill")]
+    [Tooltip("ONE HIT = ONE KILL - wróg umiera od jednego strzału")]
+    public bool oneHitKill = true;
 
     [Header("Effects - Opcjonalnie")]
     [Tooltip("Prefab efektu przy trafieniu (opcjonalnie)")]
     public GameObject hitEffectPrefab;
 
     private Rigidbody2D rb;
-    private Vector2 direction;
+    private Vector2 baseDirection; // Bazowy kierunek (nie skalowany)
     private float spawnTime;
 
     void Awake()
@@ -37,25 +43,32 @@ public class BulletController : MonoBehaviour
     /// </summary>
     public void Initialize(Vector2 shootDirection)
     {
-        direction = shootDirection.normalized;
+        baseDirection = shootDirection.normalized;
         
-        // Ustaw prędkość pocisku
+        // Ustaw początkową prędkość (skalowaną przez GameTime.timescale)
         if (rb != null)
         {
-            rb.velocity = direction * bulletSpeed;
+            rb.velocity = baseDirection * bulletSpeed * GameTime.timescale;
         }
 
-        // Obróć pocisk w kierunku lotu (opcjonalnie, dla wizualnego efektu)
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        // Obróć pocisk w kierunku lotu
+        float angle = Mathf.Atan2(baseDirection.y, baseDirection.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0, 0, angle);
+    }
+
+    void FixedUpdate()
+    {
+        // KLUCZOWE: Aktualizuj prędkość na podstawie GameTime.timescale
+        // Pozwala na płynne slow-motion (0.1 - 1.0)
+        if (rb != null)
+        {
+            rb.velocity = baseDirection * bulletSpeed * GameTime.timescale;
+        }
     }
 
     void Update()
     {
-        // Pocisk porusza się tylko gdy czas płynie (Time.timeScale > 0)
-        // Unity automatycznie obsługuje to przez Rigidbody2D.velocity
-        
-        // Zniszcz pocisk po upływie lifetime (używa Time.time który respektuje timeScale)
+        // Zniszcz pocisk po upływie lifetime
         if (lifetime > 0 && Time.time - spawnTime >= lifetime)
         {
             DestroyBullet();
@@ -76,24 +89,75 @@ public class BulletController : MonoBehaviour
             return;
         }
 
+        // Trafienie w wroga
+        if (collision.CompareTag("Enemy"))
+        {
+            OnHitEnemy(collision);
+            return;
+        }
+
+        // Trafienie w ścianę/przeszkodę
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Obstacles") || 
+            collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
+        {
+            OnHitWall(collision);
+            return;
+        }
+
         // Trafienie w cokolwiek innego
         OnHit(collision);
     }
 
-    void OnHit(Collider2D hitObject)
+    void OnHitEnemy(Collider2D enemy)
     {
-        // Spawn efektu trafienia (jeśli jest przypisany)
+        Debug.Log($"Bullet hit ENEMY: {enemy.gameObject.name} - ONE HIT KILL!");
+
+        // Spawn efektu trafienia
         if (hitEffectPrefab != null)
         {
             Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
         }
 
-        // Tutaj możesz dodać damage do przeciwników
-        // Przykład:
-        // var enemy = hitObject.GetComponent<EnemyHealth>();
-        // if (enemy != null) enemy.TakeDamage(damageAmount);
+        // ONE-HIT-KILL: Zniszcz wroga natychmiast
+        if (oneHitKill)
+        {
+            Destroy(enemy.gameObject);
+            Debug.Log($"Enemy {enemy.gameObject.name} destroyed!");
+        }
 
+        // Zniszcz pocisk
+        if (destroyOnHit)
+        {
+            DestroyBullet();
+        }
+    }
+
+    void OnHitWall(Collider2D wall)
+    {
+        Debug.Log($"Bullet hit WALL: {wall.gameObject.name}");
+
+        // Spawn efektu trafienia
+        if (hitEffectPrefab != null)
+        {
+            Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
+        }
+
+        // Zniszcz pocisk po trafieniu w ścianę
+        if (destroyOnHit)
+        {
+            DestroyBullet();
+        }
+    }
+
+    void OnHit(Collider2D hitObject)
+    {
         Debug.Log($"Bullet hit: {hitObject.gameObject.name}");
+
+        // Spawn efektu trafienia
+        if (hitEffectPrefab != null)
+        {
+            Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
+        }
 
         // Zniszcz pocisk po trafieniu
         if (destroyOnHit)
@@ -109,8 +173,8 @@ public class BulletController : MonoBehaviour
 
     void OnBecameInvisible()
     {
-        // Zniszcz pocisk gdy wyjdzie poza ekran (opcjonalna optymalizacja)
-        // Odkomentuj jeśli chcesz
+        // Opcjonalnie: Zniszcz pocisk gdy wyjdzie poza ekran
+        // Odkomentuj jeśli chcesz automatyczne niszczenie
         // DestroyBullet();
     }
 }
