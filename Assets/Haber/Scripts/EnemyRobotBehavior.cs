@@ -42,7 +42,6 @@ public class EnemyRobotBehavior : MonoBehaviour
 
         Transform targetPlayer = GetNearestPlayerInRange();
         animator.SetInteger("moveDirection", verticalSign);
-        pathfindScript.SetTimeModifier(timeModifier);
         animator.speed = timeModifier;
 
         bool seePlayer = false;
