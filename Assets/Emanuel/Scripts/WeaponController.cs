@@ -16,8 +16,11 @@ public class WeaponController : MonoBehaviour
     [Tooltip("Punkt z którego wystrzeliwane są pociski (opcjonalnie, jeśli null = środek gracza)")]
     public Transform firePoint;
     
-    [Tooltip("Czas między strzałami w sekundach")]
-    public float fireRate = 0.2f;
+    [Tooltip("Bazowy czas między strzałami gdy gracz STOI (timescale ~0)")]
+    public float baseFireRate = 0.5f;
+    
+    [Tooltip("Minimalny czas między strzałami gdy gracz BIEGNIE (timescale = 1)")]
+    public float minFireDelay = 0.2f;
     
     [Tooltip("Czy używać New Input System")]
     public bool useNewInputSystem = true;
@@ -32,6 +35,7 @@ public class WeaponController : MonoBehaviour
     
     private AudioSource audioSource;
     private float lastFireTime = 0f;
+    private float fireRateCooldown = 0f;
     private bool canShoot = true;
 
     void Start()
@@ -80,11 +84,21 @@ public class WeaponController : MonoBehaviour
 
     void Update()
     {
+        // KLUCZOWE: Zmniejsz cooldown każdą klatkę (skalowane przez GameTime.timescale)
+        if (fireRateCooldown > 0f)
+        {
+            // Cooldown zmniejsza się szybciej gdy się ruszasz (GameTime.timescale wyższy)
+            fireRateCooldown -= Time.deltaTime * GameTime.timescale;
+        }
+
         HandleShootInput();
     }
 
     void HandleShootInput()
     {
+        // Sprawdź czy cooldown minął
+        bool canFireNow = fireRateCooldown <= 0f && canShoot;
+        
         bool shootPressed = false;
 
         // ZAWSZE sprawdź klasyczny input jako podstawę (działa zawsze)
@@ -114,58 +128,68 @@ public class WeaponController : MonoBehaviour
 #endif
         }
 
-        if (shootPressed && canShoot)
+        if (shootPressed && canFireNow)
         {
             Shoot();
         }
-        else if (shootPressed && !canShoot)
+        else if (shootPressed && !canFireNow)
         {
-            Debug.Log("WeaponController: Nie można strzelać (canShoot = false)");
+            if (fireRateCooldown > 0f)
+            {
+                Debug.Log($"WeaponController: Cooldown aktywny ({fireRateCooldown:F2}s pozostało)");
+            }
+            else if (!canShoot)
+            {
+                Debug.Log("WeaponController: Nie można strzelać (canShoot = false)");
+            }
         }
     }
 
     void Shoot()
     {
-        // Sprawdź cooldown
-        if (Time.time - lastFireTime < fireRate)
+        if (bulletPrefab == null)
         {
+            Debug.LogError("WeaponController: Nie można strzelić - brak Bullet Prefab!");
             return;
         }
 
-        if (bulletPrefab == null || crosshair == null)
+        if (crosshair == null)
         {
-            Debug.LogWarning("WeaponController: Brak bulletPrefab lub crosshair!");
+            Debug.LogError("WeaponController: Nie można strzelić - brak Crosshair!");
             return;
         }
 
-        // Oblicz kierunek strzału (od gracza do celownika)
-        Vector3 shootDirection = (crosshair.GetCrosshairPosition() - firePoint.position).normalized;
+        Vector2 direction = (crosshair.transform.position - firePoint.position).normalized;
 
-        // Stwórz pocisk
         GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
-        
-        // Zainicjalizuj pocisk
         BulletController bulletController = bullet.GetComponent<BulletController>();
+        
         if (bulletController != null)
         {
-            bulletController.Initialize(shootDirection);
+            bulletController.Initialize(direction);
         }
         else
         {
-            Debug.LogError("WeaponController: Bullet prefab nie ma BulletController!");
+            Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
+            if (bulletRb != null)
+            {
+                bulletRb.velocity = direction * 15f * GameTime.timescale;
+            }
         }
 
-        // Odtwórz dźwięk strzału
         if (audioSource != null && shootSound != null)
         {
             audioSource.PlayOneShot(shootSound);
         }
 
-        // Zapisz czas ostatniego strzału
+        // Ustaw cooldown: Im wyższy timescale (szybciej się ruszasz), tym KRÓTSZY cooldown
+        // timescale = 0.0 (stoisz) → cooldown = baseFireRate (0.5s) = WOLNO
+        // timescale = 1.0 (biegniesz) → cooldown = minFireDelay (0.2s) = SZYBKO
+        float calculatedCooldown = Mathf.Lerp(baseFireRate, minFireDelay, GameTime.timescale);
+        fireRateCooldown = calculatedCooldown;
+        
         lastFireTime = Time.time;
-
-        // Debug info
-        Debug.Log($"Shot fired at {Time.time}");
+        Debug.Log($"Shot fired! Cooldown: {calculatedCooldown:F2}s | Player speed (timescale): {GameTime.timescale:F2}");
     }
 
     /// <summary>
