@@ -104,21 +104,32 @@ public class BulletController : MonoBehaviour
 
     void OnHitEnemy(Collider2D enemy)
     {
+        Debug.Log($"[BULLET] HIT ENEMY: {enemy.gameObject.name}");
+        
         // Spawn efektu
         if (hitEffectPrefab != null) Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
 
-        // ONE-HIT-KILL logic
-        // Tutaj zakładam, że masz interfejs IDamageable lub skrypt EnemyHealth
-        // Jeśli nie, możesz to zakomentować
-         // ONE-HIT-KILL: Zniszcz wroga natychmiast
+        // ONE-HIT-KILL: Zniszcz wroga natychmiast
         if (oneHitKill)
         {
             IDamageable damageScript = enemy.GetComponent<IDamageable>();
             if (damageScript != null)
             {
                 damageScript.TakeDamage();
-                Debug.Log($"Enemy {enemy.gameObject.name} hit!");
+                Debug.Log($"[BULLET] Enemy {enemy.gameObject.name} took damage via IDamageable!");
             }
+            else
+            {
+                // Fallback: Jeśli nie ma IDamageable, po prostu zniszcz wroga
+                Destroy(enemy.gameObject);
+                Debug.Log($"[BULLET] Enemy {enemy.gameObject.name} destroyed (no IDamageable)!");
+            }
+        }
+        
+        // KLUCZOWE: Zniszcz pocisk po trafieniu!
+        if (destroyOnHit)
+        {
+            DestroyBullet();
         }
     }
 
