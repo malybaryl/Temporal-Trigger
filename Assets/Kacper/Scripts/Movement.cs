@@ -11,10 +11,10 @@ public class Movement : MonoBehaviour
 {
     public enum InputSource { Keyboard = 0, GamepadByIndex = 10 } 
     [Header("Input")]
-    public bool useNewInputSystem = true; // ustaw false jeúli nie masz New Input System
-    public bool autoSelectLastUsedGamepad = true; // jeúli true, wybierze pad ktÛry ostatnio go uøywa≥
-    [Tooltip("Jeøeli uøywasz GamepadByIndex, wpisz indeks (0 = pierwszy pad w Gamepad.all)")]
-    public int selectedGamepadIndex = 0; // uøywane jeúli chcesz wybraÊ pad rÍcznie
+    public bool useNewInputSystem = true; // ustaw false jeÔøΩli nie masz New Input System
+    public bool autoSelectLastUsedGamepad = true; // jeÔøΩli true, wybierze pad ktÔøΩry ostatnio go uÔøΩywaÔøΩ
+    [Tooltip("JeÔøΩeli uÔøΩywasz GamepadByIndex, wpisz indeks (0 = pierwszy pad w Gamepad.all)")]
+    public int selectedGamepadIndex = 0; // uÔøΩywane jeÔøΩli chcesz wybraÔøΩ pad rÔøΩcznie
     public bool useGamepadByIndex = false; // true = korzystaj z Gamepad.all[selectedGamepadIndex]
 
     [Header("Movement")]
@@ -23,9 +23,26 @@ public class Movement : MonoBehaviour
     [Range(0.001f, 1f)]
     public float smoothing = 0.12f;
 
+    [Header("Footsteps")]
+    public AudioSource footstepSource;
+    public AudioClip stepSound1;
+    public AudioClip stepSound2;
+    [Tooltip("Minimalna prƒôdko≈õƒá, przy kt√≥rej odtwarzane sƒÖ kroki.")]
+    public float footstepMinSpeed = 0.1f;
+    [Tooltip("Czas pomiƒôdzy krokami w sekundach.")]
+    public float footstepInterval = 0.4f;
+    [Tooltip("Czas fade-out dla ostatniego kroku (echo w biurze). Je≈õli 0, u≈ºyje d≈Çugo≈õci klipu audio.")]
+    public float lastStepFadeOutDuration = 0f;
+
     Rigidbody2D rb;
     Vector2 velocitySmoothRef = Vector2.zero;
     Vector2 targetVelocity = Vector2.zero;
+    float footstepTimer = 0f;
+    bool wasMoving = false;
+    bool useFirstStep = true;
+    Coroutine currentFadeCoroutine = null;
+    float targetVolume = 1f;
+    AudioClip lastPlayedClip = null;
 
 #if ENABLE_INPUT_SYSTEM
     void OnEnable()
@@ -40,7 +57,7 @@ public class Movement : MonoBehaviour
 
     private void OnDeviceChange(InputDevice device, InputDeviceChange change)
     {
-        // reaguj na pod≥πczenie/od≥πczenie padÛw
+        // reaguj na podÔøΩÔøΩczenie/odÔøΩÔøΩczenie padÔøΩw
         if (device is Gamepad)
         {
             switch (change)
@@ -77,22 +94,22 @@ public class Movement : MonoBehaviour
         if (useNewInputSystem && (useGamepadByIndex || autoSelectLastUsedGamepad))
         {
 #if ENABLE_INPUT_SYSTEM
-            // Auto-select ostatnio uøywanego gamepada
+            // Auto-select ostatnio uÔøΩywanego gamepada
             if (autoSelectLastUsedGamepad && Gamepad.current != null)
             {
-                // Gamepad.current moøe byÊ aktualizowany przez Input System gdy pad wyúle sygna≥
+                // Gamepad.current moÔøΩe byÔøΩ aktualizowany przez Input System gdy pad wyÔøΩle sygnaÔøΩ
                 input = ReadFromGamepad(Gamepad.current);
             }
             else if (useGamepadByIndex)
             {
-                // rÍczny wybÛr po indeksie
+                // rÔøΩczny wybÔøΩr po indeksie
                 if (Gamepad.all.Count > selectedGamepadIndex && selectedGamepadIndex >= 0)
                 {
                     input = ReadFromGamepad(Gamepad.all[selectedGamepadIndex]);
                 }
                 else
                 {
-                    // jeúli brak pada o takim indeksie -> fallback
+                    // jeÔøΩli brak pada o takim indeksie -> fallback
                     input = ReadFromKeyboardFallback();
                 }
             }
@@ -108,12 +125,128 @@ public class Movement : MonoBehaviour
         }
         else
         {
-            // uøywamy klasycznego Input Managera
+            // uÔøΩywamy klasycznego Input Managera
             input = ReadFromKeyboardFallback();
         }
 
         input = Vector2.ClampMagnitude(input, 1f);
         targetVelocity = input * moveSpeed;
+
+        // Logika krok√≥w
+        HandleFootsteps();
+    }
+
+    void HandleFootsteps()
+    {
+        if (footstepSource == null) return;
+
+        float speed = targetVelocity.magnitude;
+        bool isMoving = speed >= footstepMinSpeed;
+
+        if (isMoving)
+        {
+            // Zatrzymaj fade ostatniego kroku je≈õli by≈Ç uruchomiony
+            if (!wasMoving && currentFadeCoroutine != null)
+            {
+                StopCoroutine(currentFadeCoroutine);
+                currentFadeCoroutine = null;
+                targetVolume = 1f;
+                footstepSource.volume = 1f;
+            }
+
+            // Odliczaj timer
+            footstepTimer -= Time.deltaTime;
+            
+            // Dostosuj prƒôdko≈õƒá krok√≥w do prƒôdko≈õci ruchu
+            float adjustedInterval = footstepInterval / Mathf.Clamp(speed / moveSpeed, 0.5f, 2f);
+            
+            if (footstepTimer <= 0f)
+            {
+                PlayFootstep();
+                footstepTimer = adjustedInterval;
+            }
+        }
+        else if (wasMoving && !isMoving)
+        {
+            // Zatrzymano ruch - ostatni krok z d≈Çugim echo
+            if (currentFadeCoroutine != null)
+            {
+                StopCoroutine(currentFadeCoroutine);
+            }
+            currentFadeCoroutine = StartCoroutine(FadeOutLastStep());
+        }
+
+        wasMoving = isMoving;
+    }
+
+    void PlayFootstep()
+    {
+        if (footstepSource == null) return;
+
+        AudioClip clipToPlay = null;
+        
+        // Naprzemiennie wybierz miƒôdzy dwoma d≈∫wiƒôkami (1-2-1-2)
+        if (stepSound1 != null && stepSound2 != null)
+        {
+            clipToPlay = useFirstStep ? stepSound1 : stepSound2;
+            useFirstStep = !useFirstStep;
+        }
+        else if (stepSound1 != null)
+        {
+            clipToPlay = stepSound1;
+        }
+        else if (stepSound2 != null)
+        {
+            clipToPlay = stepSound2;
+        }
+
+        if (clipToPlay != null)
+        {
+            lastPlayedClip = clipToPlay;
+            footstepSource.PlayOneShot(clipToPlay, targetVolume);
+        }
+    }
+
+    IEnumerator FadeOutLastStep()
+    {
+        // D≈Çugie echo dla ostatniego kroku - p≈Çynne zanikanie targetVolume
+        if (footstepSource == null) yield break;
+        
+        // U≈ºyj d≈Çugo≈õci ostatniego klipu je≈õli lastStepFadeOutDuration = 0
+        float fadeDuration = lastStepFadeOutDuration;
+        if (fadeDuration <= 0f && lastPlayedClip != null)
+        {
+            fadeDuration = lastPlayedClip.length;
+        }
+        if (fadeDuration <= 0f)
+        {
+            fadeDuration = 1.2f; // fallback
+        }
+        
+        float startVolume = targetVolume;
+        float elapsed = 0f;
+        
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / fadeDuration;
+            // U≈ºyj krzywej eksponencjalnej dla szybszego zanikania na poczƒÖtku
+            float curve = t * t; // kwadratowa krzywa - szybszy fade
+            targetVolume = Mathf.Lerp(startVolume, 0f, curve);
+            yield return null;
+        }
+        
+        targetVolume = 1f; // reset dla nastƒôpnego ruchu
+        currentFadeCoroutine = null;
+    }
+
+    void OnDestroy()
+    {
+        // Cleanup przy usuwaniu obiektu
+        if (currentFadeCoroutine != null)
+        {
+            StopCoroutine(currentFadeCoroutine);
+        }
     }
 
     Vector2 ReadFromKeyboardFallback()
@@ -131,7 +264,7 @@ public class Movement : MonoBehaviour
 
         Vector2 v = gp.leftStick.ReadValue();
 
-        // fallback do d-pad jeúli joystick bliski 0
+        // fallback do d-pad jeÔøΩli joystick bliski 0
         if (v.sqrMagnitude < 0.0001f)
         {
             v = gp.dpad.ReadValue();
@@ -158,7 +291,7 @@ public class Movement : MonoBehaviour
         }
     }
 
-    // NarzÍdzie debugujπce: pokaø listÍ padÛw i status
+    // NarzÔøΩdzie debugujÔøΩce: pokaÔøΩ listÔøΩ padÔøΩw i status
     void OnGUI()
     {
         int y = 10;
@@ -180,7 +313,7 @@ public class Movement : MonoBehaviour
 #endif
     }
 
-    // Moøesz wywo≥aÊ tÍ metodÍ z innego skryptu (np. menu) by ustawiÊ pad przez indeks:
+    // MoÔøΩesz wywoÔøΩaÔøΩ tÔøΩ metodÔøΩ z innego skryptu (np. menu) by ustawiÔøΩ pad przez indeks:
     public void SelectGamepadByIndex(int index)
     {
 #if ENABLE_INPUT_SYSTEM
@@ -200,7 +333,7 @@ public class Movement : MonoBehaviour
 #endif
     }
 
-    // pomocnicza metoda zwracajπca listÍ nazw padÛw (do UI)
+    // pomocnicza metoda zwracajÔøΩca listÔøΩ nazw padÔøΩw (do UI)
     public List<string> GetGamepadNames()
     {
         List<string> names = new List<string>();
