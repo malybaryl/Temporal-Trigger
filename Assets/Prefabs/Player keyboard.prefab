@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 1095622556512281320}
   - component: {fileID: 3799741512488346498}
   - component: {fileID: 2932679076757508185}
+  - component: {fileID: 7899156771687972818}
   m_Layer: 8
   m_Name: Player keyboard
   m_TagString: Player
@@ -310,10 +311,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c918a5be27e134c7485ea61938142b94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gamepadIndex: 0
+  useGamepadByIndex: 1
   bulletPrefab: {fileID: 1269919646137202416, guid: 7acc0ab870eb44454b98a1813d3a96d6, type: 3}
-  firePoint: {fileID: 0}
-  baseFireRate: 0.3
-  minFireDelay: 0.15
-  useNewInputSystem: 1
-  crosshair: {fileID: 0}
-  shootSound: {fileID: 0}
+  firePoint: {fileID: 2197313573230439456}
+  bulletForce: 20
+  fireRate: 0.2
+  crosshairController: {fileID: 0}
+--- !u!114 &7899156771687972818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862339223155736111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e5abc83d46bff84a80cf073b0c88e86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  teleportDistance: 100
+  gamepadIndex: 0
+  useGamepadByIndex: 1
