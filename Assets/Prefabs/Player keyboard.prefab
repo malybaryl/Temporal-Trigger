@@ -15,14 +15,14 @@ GameObject:
   - component: {fileID: 7440982036676214593}
   - component: {fileID: 5228726533123143203}
   - component: {fileID: 1095622556512281320}
-  - component: {fileID: 1074841132883105504}
-  m_Layer: 0
+  - component: {fileID: 3799741512488346498}
+  m_Layer: 8
   m_Name: Player keyboard
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2197313573230439456
 Transform:
   m_ObjectHideFlags: 0
@@ -275,8 +275,8 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &1074841132883105504
-MonoBehaviour:
+--- !u!70 &3799741512488346498
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -293,3 +293,30 @@ MonoBehaviour:
   useNewInputSystem: 1
   crosshair: {fileID: 0}
   shootSound: {fileID: 0}
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 0.2, y: 0.5}
+  m_Direction: 0

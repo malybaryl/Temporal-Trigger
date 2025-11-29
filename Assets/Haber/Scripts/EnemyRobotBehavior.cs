@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -6,17 +6,20 @@ using UnityEngine.UIElements;
 
 public class EnemyRobotBehavior : MonoBehaviour
 {
-    private EnemyPathfinding patchfindScript;
+    private EnemyPathfinding pathfindScript;
     [SerializeField] float minActivationRange = 15;
     private List<GameObject> players = new List<GameObject>();
     private Transform targetPlayer;
     private Animator animator;
-    
+
+    [SerializeField] private float timeModifier = 1f;
+    [SerializeField] private LayerMask visionMask;
+
 
     private void Awake()
     {
-        patchfindScript = GetComponent<EnemyPathfinding>();
-        if (patchfindScript == null)
+        pathfindScript = GetComponent<EnemyPathfinding>();
+        if (pathfindScript == null)
             Debug.LogWarning("Nie znaleziono EnemyPathfinding!");
 
         animator = GetComponent<Animator>();
@@ -30,7 +33,7 @@ public class EnemyRobotBehavior : MonoBehaviour
 
     private void Update()
     {
-        float y = patchfindScript.movementDirection.y;
+        float y = pathfindScript.movementDirection.y;
         int verticalSign = 0;
 
         float threshold = 0.01f;
@@ -39,12 +42,36 @@ public class EnemyRobotBehavior : MonoBehaviour
         else if (y < -threshold)
             verticalSign = -1;
 
-        Debug.Log($"movementDirection.y = {y}, verticalSign = {verticalSign}");
-
         Transform targetPlayer = GetNearestPlayerInRange();
-        Debug.Log(targetPlayer);
-
         animator.SetInteger("moveDirection", verticalSign);
+        pathfindScript.SetTimeModifier(timeModifier);
+        animator.speed = timeModifier;
+
+
+        if (players.Count > 0)
+        {
+            Transform nearestPlayer = GetNearestPlayerInRange();
+            if (nearestPlayer == null)
+                return;
+
+            Vector2 dir = (nearestPlayer.position - transform.position).normalized;
+            float dist = Vector2.Distance(transform.position, nearestPlayer.position);
+
+            RaycastHit2D hit = Physics2D.Raycast(
+                transform.position,
+                dir,
+                dist,
+                visionMask
+            );
+
+            if (hit.collider != null)
+            {
+                if (hit.collider.CompareTag("Player"))
+                {
+                    //hit
+                }
+            }
+        }
     }
 
 
@@ -53,7 +80,6 @@ public class EnemyRobotBehavior : MonoBehaviour
         if (players.Count <= 0)
         {
             GameObject[] foundPlayers = GameObject.FindGameObjectsWithTag("Player");
-            Debug.Log(foundPlayers.Length);
             foreach (GameObject player in foundPlayers)
             {
                 if (!players.Contains(player))

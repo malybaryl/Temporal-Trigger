@@ -14,7 +14,8 @@ GameObject:
   - component: {fileID: 1513598662601453281}
   - component: {fileID: 4586614742001551335}
   - component: {fileID: 5994852918335909757}
-  m_Layer: 0
+  - component: {fileID: 2232532574474203244}
+  m_Layer: 8
   m_Name: Player gamepad-1
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -141,6 +142,7 @@ MonoBehaviour:
   footstepInterval: 0.4
   lastStepFadeOutDuration: 0
   anim: {fileID: 4586614742001551335}
+  isDead: 0
 --- !u!95 &4586614742001551335
 Animator:
   serializedVersion: 5
@@ -258,3 +260,38 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!70 &2232532574474203244
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862661911384055546}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 0.2, y: 0.5}
+  m_Direction: 0
