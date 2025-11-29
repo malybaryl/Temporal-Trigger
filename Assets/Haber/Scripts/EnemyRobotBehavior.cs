@@ -8,6 +8,11 @@ using UnityEngine.UIElements;
 public class EnemyRobotBehavior : MonoBehaviour, IDamageable
 {
     private EnemyPathfinding pathfindScript;
+    private RobotAttack attackScript;
+    private AudioSource audioSource;
+    [SerializeField] private AudioClip deathClip;
+
+
     [SerializeField] float minActivationRange = 10f;
     [SerializeField] float stopAndFireRange = 5f;
 
@@ -18,6 +23,8 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
     [SerializeField] private float timeModifier = 1f;
     [SerializeField] private LayerMask visionMask;
 
+    private int verticalSign = 0;
+    bool isDying = false;
 
     private void Awake()
     {
@@ -26,19 +33,37 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
             Debug.LogWarning("Nie znaleziono EnemyPathfinding!");
 
         animator = GetComponent<Animator>();
+        if (animator == null)
+            Debug.LogWarning("Nie znaleziono animatora!");
+
+
+        attackScript = GetComponent<RobotAttack>();
+        if (attackScript == null)
+            Debug.LogWarning("Nie znaleziono AttackScript");
+
+        audioSource = GetComponent<AudioSource>();
     }
 
     private void Start()
     {
-        AddPlyersToTargetList();
+        AddPlayersToTargetList();
     }
 
 
     private void Update()
     {
+        if (isDying)
+        {
+            pathfindScript.ClearPath();
+            attackScript.SetAllowFire(null, false, verticalSign);
+            return;
+        }
+  
+
+
         float y = pathfindScript.movementDirection.y;
 
-        int verticalSign = GetVerticalSign(pathfindScript.movementDirection);
+        verticalSign = GetVerticalSign(pathfindScript.movementDirection);
 
         Transform targetPlayer = GetNearestPlayerInRange();
         animator.SetInteger("moveDirection", verticalSign);
@@ -76,20 +101,26 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
         {
             float distanceToNearest = Vector2.Distance(targetPlayer.transform.position, transform.position);
             if (distanceToNearest > stopAndFireRange || !seePlayer)
+            {
                 pathfindScript.SetPath(targetPlayer.transform.position);
+                attackScript.SetAllowFire(targetPlayer.transform, false, verticalSign);
+            }
             else
             {
                 pathfindScript.ClearPath();
                 verticalSign = GetVerticalSign(targetPlayer.transform.position - transform.position);
                 animator.SetInteger("moveDirection", verticalSign);
+                attackScript.SetAllowFire(targetPlayer.transform, true, verticalSign);
             }
         }
         else
+        {
             pathfindScript.ClearPath();
+            attackScript.SetAllowFire(null, false, verticalSign);
+        }
     }
 
-
-    private void AddPlyersToTargetList()
+    private void AddPlayersToTargetList()
     {
         if (players.Count <= 0)
         {
@@ -134,8 +165,13 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
 
     public void TakeDamage()
     {
-        //play death anim
+        animator.Play("RobotDeath");
+        audioSource.PlayOneShot(deathClip);
+        isDying = true;
+    }
 
+    public void OnDeathFinish()
+    {
         Destroy(this.gameObject);
     }
 }

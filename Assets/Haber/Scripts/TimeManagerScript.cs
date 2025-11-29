@@ -9,7 +9,7 @@ static class GameTime
 
     public static void SetTimeScale(float newScale)
     {
-        timescale = Mathf.Clamp01(newScale);
+        timescale = Mathf.Clamp(newScale, 0.1f, 1f);
     }
 }
 
