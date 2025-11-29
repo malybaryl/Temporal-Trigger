@@ -218,17 +218,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player keyboard
       objectReference: {fileID: 0}
-    - target: {fileID: 1862339223155736111, guid: 8d7ab8f3bee11b44882a418b3394bed9, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 2197313573230439456, guid: 8d7ab8f3bee11b44882a418b3394bed9, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.425
       objectReference: {fileID: 0}
     - target: {fileID: 2197313573230439456, guid: 8d7ab8f3bee11b44882a418b3394bed9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.17
+      value: -1.168
       objectReference: {fileID: 0}
     - target: {fileID: 2197313573230439456, guid: 8d7ab8f3bee11b44882a418b3394bed9, type: 3}
       propertyPath: m_LocalPosition.z
@@ -367,6 +363,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   minActivationRange: 15
+  timeModifier: 1
+  visionMask:
+    serializedVersion: 2
+    m_Bits: 384
 --- !u!95 &711000392
 Animator:
   serializedVersion: 5
@@ -731,7 +731,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4909130895126410175, guid: 432864baee75fb24ab08836b1fc907d7, type: 3}
       propertyPath: acceleration
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 4909130895126410175, guid: 432864baee75fb24ab08836b1fc907d7, type: 3}
       propertyPath: slowingDistance

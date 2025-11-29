@@ -11,7 +11,7 @@ public class EnemyPathfinding : MonoBehaviour
     [SerializeField] private float acceleration = 5f;
     private float lerpedSpeed = 0f;
 
-    [SerializeField] private float timeModifier = 1f;
+    private float timeModifier = 1f;
     public Vector2 movementDirection { get; private set; } = Vector2.zero;
 
 
@@ -197,5 +197,10 @@ public class EnemyPathfinding : MonoBehaviour
             }
         }
         return neighbors;
+    }
+
+    public void SetTimeModifier(float modifier)
+    {
+        this.timeModifier = modifier;
     }
 }
