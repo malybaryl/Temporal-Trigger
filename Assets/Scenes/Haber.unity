@@ -524,10 +524,13 @@ MonoBehaviour:
   gridWidth: 20
   gridHeight: 15
   nodeSize: 1
-  gridCenter: {x: 0, y: 0}
+  pastTimelineCenter: {x: -20, y: 0}
+  presentTimelineCenter: {x: 0, y: 0}
+  futureTimelineCenter: {x: 20, y: 0}
   obstacleMask:
     serializedVersion: 2
     m_Bits: 128
+  debugShowGrid: 0
 --- !u!4 &1860010128
 Transform:
   m_ObjectHideFlags: 0
