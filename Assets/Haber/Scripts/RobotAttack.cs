@@ -6,21 +6,31 @@ public class RobotAttack : MonoBehaviour
 {
     [SerializeField] private GameObject bulletPrefab;
 
-    private const float defaultFireCooldownMs = 250;
-    private float currFireCooldown;
+    private const float defaultFireCooldownMs = 250f;
+    private float currFireCooldownMs;
+    private bool allowFire = false;
     void Start()
     {
-        
+        currFireCooldownMs = defaultFireCooldownMs;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if(currFireCooldownMs <= 0)
+        {
+            currFireCooldownMs = defaultFireCooldownMs;
+            //fire
+            //Debug.Log("FIREEEEEE");
+        }
+        currFireCooldownMs -= Time.deltaTime * 1000;
     }
 
-    private void ResetCooldown()
+    private void SetAllowFire(bool allow)
     {
-        currFireCooldown = defaultFireCooldownMs;
+        allowFire = allow;
+
+        if (!allowFire)
+            currFireCooldownMs = defaultFireCooldownMs;
     }
 }

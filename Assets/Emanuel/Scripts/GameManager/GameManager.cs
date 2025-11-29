@@ -37,9 +37,7 @@ public class GameManager : MonoBehaviour
 
     // Lista wszystkich graczy w grze
     private List<GameObject> players = new List<GameObject>();
-    
-    // Referencje do innych managerów
-    private TimeController timeController;
+   
 
     void Awake()
     {
@@ -51,13 +49,6 @@ public class GameManager : MonoBehaviour
         }
         _instance = this;
         DontDestroyOnLoad(gameObject); // Przetrwa zmianę sceny
-
-        // Znajdź lub stwórz TimeController
-        timeController = GetComponent<TimeController>();
-        if (timeController == null)
-        {
-            timeController = gameObject.AddComponent<TimeController>();
-        }
 
         DebugLog("GameManager: Initialized");
     }
