@@ -14,13 +14,14 @@ GameObject:
   - component: {fileID: 4754353088643301984}
   - component: {fileID: 7440982036676214593}
   - component: {fileID: 5228726533123143203}
+  - component: {fileID: 1095622556512281320}
   m_Layer: 0
   m_Name: Player keyboard
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2197313573230439456
 Transform:
   m_ObjectHideFlags: 0
@@ -140,6 +141,7 @@ MonoBehaviour:
   footstepMinSpeed: 0.1
   footstepInterval: 0.4
   lastStepFadeOutDuration: 0
+  anim: {fileID: 1095622556512281320}
 --- !u!82 &7440982036676214593
 AudioSource:
   m_ObjectHideFlags: 0
@@ -250,3 +252,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   audioSource: {fileID: 7440982036676214593}
   fadeDuration: 1
+--- !u!95 &1095622556512281320
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862339223155736111}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2ce8326274b53654ebe845926ac5428c, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
