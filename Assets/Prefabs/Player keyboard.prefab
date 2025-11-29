@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 7668192189445013290}
   - component: {fileID: 4754353088643301984}
   - component: {fileID: 7440982036676214593}
-  - component: {fileID: 5228726533123143203}
   - component: {fileID: 1095622556512281320}
   - component: {fileID: 3799741512488346498}
   - component: {fileID: 2932679076757508185}
@@ -144,6 +143,8 @@ MonoBehaviour:
   footstepInterval: 0.4
   lastStepFadeOutDuration: 0
   anim: {fileID: 1095622556512281320}
+  isFacingRight: 1
+  fixFrontRotation: 1
   isDead: 0
 --- !u!82 &7440982036676214593
 AudioSource:
@@ -241,20 +242,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &5228726533123143203
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1862339223155736111}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69072fc8a08f14b84805eca678678f52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  audioSource: {fileID: 7440982036676214593}
-  fadeDuration: 1
 --- !u!95 &1095622556512281320
 Animator:
   serializedVersion: 5
@@ -325,7 +312,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 1269919646137202416, guid: 7acc0ab870eb44454b98a1813d3a96d6, type: 3}
   firePoint: {fileID: 0}
-  fireRate: 0.2
+  baseFireRate: 0.3
+  minFireDelay: 0.15
   useNewInputSystem: 1
   crosshair: {fileID: 0}
   shootSound: {fileID: 0}
