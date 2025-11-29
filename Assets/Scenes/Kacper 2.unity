@@ -284,10 +284,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Crosshair
       objectReference: {fileID: 0}
-    - target: {fileID: 6881961818627429497, guid: a58cde54c602045a5a1de57a2b4cac6c, type: 3}
-      propertyPath: playerTransform
-      value: 
-      objectReference: {fileID: 1223214808}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -588,7 +584,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5401828575992761974, guid: 520c8a5a24eda674bac98fd1efcdfb71, type: 3}
       propertyPath: orthographic size
-      value: 2.8125
+      value: 4.7513266
       objectReference: {fileID: 0}
     - target: {fileID: 6238082012091097542, guid: 520c8a5a24eda674bac98fd1efcdfb71, type: 3}
       propertyPath: m_LocalPosition.x

@@ -3,6 +3,11 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 #endif
 
+/// <summary>
+/// Kontroluje pozycję celownika.
+/// Na gamepadzie działa jak Target Lock: pojawia się tylko gdy wykryje wroga.
+/// </summary>
+[RequireComponent(typeof(SpriteRenderer))] // Wymaga komponentu SpriteRenderer do znikania
 public class CrosshairController : MonoBehaviour
 {
     [Header("Input Settings")]
@@ -12,8 +17,6 @@ public class CrosshairController : MonoBehaviour
     [Header("Auto Aim Settings")]
     [Tooltip("Włącz/Wyłącz Auto Aim dla gamepada")]
     [SerializeField] private bool useGamepadAutoAim = true; 
-
-    // USUNIĘTO: private LayerMask enemyLayer (już niepotrzebne)
 
     [Tooltip("Zasięg skanowania przeciwników")]
     [SerializeField] private float autoAimRange = 10f;
@@ -27,10 +30,13 @@ public class CrosshairController : MonoBehaviour
     private Camera mainCamera;
     private Vector3 targetPosition;
     private bool isUsingGamepad = false;
+    private SpriteRenderer spriteRenderer; // Do ukrywania celownika
 
     void Start()
     {
         mainCamera = Camera.main;
+        spriteRenderer = GetComponent<SpriteRenderer>();
+
         if (mainCamera == null) Debug.LogError("CrosshairController: Brak Main Camera!");
 
         if (playerTransform == null)
@@ -58,6 +64,7 @@ public class CrosshairController : MonoBehaviour
             {
                 Vector2 rightStick = Gamepad.current.rightStick.ReadValue();
                 
+                // Gamepad jest aktywny jeśli ruszamy gałką LUB auto-aim jest włączony
                 if (rightStick.magnitude > 0.1f || useGamepadAutoAim) 
                 {
                     isUsingGamepad = true;
@@ -65,6 +72,7 @@ public class CrosshairController : MonoBehaviour
                     return;
                 }
             }
+            // Jeśli nie gamepad, to mysz
             isUsingGamepad = false;
             HandleMouseInput();
 #else
@@ -79,6 +87,9 @@ public class CrosshairController : MonoBehaviour
 
     void HandleMouseInput()
     {
+        // MYSZKA: Zawsze pokazuj celownik
+        if (spriteRenderer != null) spriteRenderer.enabled = true;
+
         Vector3 mousePos = Input.mousePosition;
         mousePos.z = Mathf.Abs(mainCamera.transform.position.z);
         targetPosition = mainCamera.ScreenToWorldPoint(mousePos);
@@ -90,9 +101,9 @@ public class CrosshairController : MonoBehaviour
     {
         if (playerTransform == null) return;
 
-        Vector3 finalPosition = transform.position;
         Transform closestEnemy = null;
 
+        // Szukamy wroga tylko jeśli auto-aim jest włączony
         if (useGamepadAutoAim)
         {
             closestEnemy = GetClosestEnemy();
@@ -100,24 +111,26 @@ public class CrosshairController : MonoBehaviour
 
         if (closestEnemy != null)
         {
+            // SYTUACJA 1: Znaleziono wroga
+            // Pokaż celownik
+            if (spriteRenderer != null) spriteRenderer.enabled = true;
+
             // Namierzanie wroga
             Vector3 enemyPos = closestEnemy.position;
             enemyPos.z = 0f;
-            finalPosition = Vector3.Lerp(transform.position, enemyPos, Time.deltaTime * autoAimSmoothing);
+            
+            // Płynny ruch do wroga
+            transform.position = Vector3.Lerp(transform.position, enemyPos, Time.deltaTime * autoAimSmoothing);
         }
         else
         {
-            // Manualne sterowanie (brak wroga)
-            if (stickInput.magnitude > 0.1f)
-            {
-                Vector3 direction = new Vector3(stickInput.x, stickInput.y, 0f).normalized;
-                Vector3 manualPos = playerTransform.position + direction * gamepadCrosshairDistance;
-                manualPos.z = 0f;
-                finalPosition = Vector3.Lerp(transform.position, manualPos, Time.deltaTime * autoAimSmoothing);
-            }
-        }
+            // SYTUACJA 2: Brak wroga w zasięgu
+            // Ukryj celownik (zrób go niewidzialnym)
+            if (spriteRenderer != null) spriteRenderer.enabled = false;
 
-        transform.position = finalPosition;
+            // Opcjonalnie: Trzymaj celownik na graczu (niewidoczny), żeby startował z dobrej pozycji
+            transform.position = playerTransform.position;
+        }
     }
 
     /// <summary>
@@ -125,7 +138,6 @@ public class CrosshairController : MonoBehaviour
     /// </summary>
     Transform GetClosestEnemy()
     {
-        // 1. Pobierz WSZYSTKIE collidery w zasięgu (bez filtrowania warstwą)
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(playerTransform.position, autoAimRange);
 
         Transform bestTarget = null;
@@ -134,7 +146,6 @@ public class CrosshairController : MonoBehaviour
 
         foreach (Collider2D col in hitColliders)
         {
-            // 2. Tutaj sprawdzamy TAG
             if (col.CompareTag("Enemy"))
             {
                 Vector3 directionToTarget = col.transform.position - currentPos;
