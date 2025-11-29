@@ -313,13 +313,7 @@ public class Movement : MonoBehaviour
         float speed = targetVelocity.magnitude;
         bool currentlyMoving = speed >= footstepMinSpeed;
 
-        // --- TIME CONTROLLER INTEGRATION ---
-        TimeController timeController = FindObjectOfType<TimeController>();
-        if (timeController != null)
-        {
-            timeController.RegisterPlayerMovement(gameObject, currentlyMoving);
-        }
-        // -----------------------------------
+        // TimeController został usunięty - TimeManagerScript automatycznie śledzi prędkość gracza
 
         if (currentlyMoving)
         {
