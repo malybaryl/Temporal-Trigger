@@ -12,11 +12,11 @@ public class Movement : MonoBehaviour
     public enum InputSource { Keyboard = 0, GamepadByIndex = 10 }
 
     [Header("Input")]
-    public bool useNewInputSystem = true;              
-    public bool autoSelectLastUsedGamepad = true;      
+    public bool useNewInputSystem = true;
+    public bool autoSelectLastUsedGamepad = true;
     [Tooltip("Jeżeli używasz GamepadByIndex, wpisz indeks (0 = pierwszy pad w Gamepad.all)")]
-    public int selectedGamepadIndex = 0;              
-    public bool useGamepadByIndex = false;             
+    public int selectedGamepadIndex = 0;
+    public bool useGamepadByIndex = false;
     #endregion
 
     #region MOVEMENT SETTINGS
@@ -44,7 +44,7 @@ public class Movement : MonoBehaviour
     [Header("Animator")]
     [SerializeField] private Animator anim;
     private bool isMoving = false;
-    private bool isFacingFront = true; // true = front (dół), false = back (góra)
+    private bool isFacingFront = true;
     #endregion
 
     #region PRIVATE VARIABLES
@@ -58,6 +58,8 @@ public class Movement : MonoBehaviour
     private Coroutine currentFadeCoroutine = null;
     private float targetVolume = 1f;
     private AudioClip lastPlayedClip = null;
+
+    [SerializeField] private bool isDead = false; 
     #endregion
 
 #if ENABLE_INPUT_SYSTEM
@@ -100,10 +102,14 @@ public class Movement : MonoBehaviour
         if (rb == null) rb = gameObject.AddComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
         rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+        
     }
 
     void Update()
     {
+        // --- BLOKADA RUCHU JEŚLI MARTWY ---
+        if (isDead) return; 
+
         Vector2 input = GetInput();
         input = Vector2.ClampMagnitude(input, 1f);
         targetVelocity = input * moveSpeed;
@@ -114,6 +120,13 @@ public class Movement : MonoBehaviour
 
     void FixedUpdate()
     {
+        // --- ZATRZYMANIE FIZYKI JEŚLI MARTWY ---
+        if (isDead)
+        {
+            rb.velocity = Vector2.zero;
+            return;
+        }
+
         if (smoothMovement)
         {
             rb.velocity = Vector2.SmoothDamp(rb.velocity, targetVelocity, ref velocitySmoothRef, smoothing);
@@ -122,6 +135,41 @@ public class Movement : MonoBehaviour
         {
             rb.velocity = targetVelocity;
         }
+    }
+
+    // --- NOWA METODA DO ZABIJANIA ---
+    /// <summary>
+    /// Wywołaj tę funkcję (np. z innego skryptu Health), aby zabić gracza.
+    /// </summary>
+    [ContextMenu("Kill Player (Test)")] // Pozwala testować w Inspectorze prawym przyciskiem myszy
+    public void Die()
+    {
+        if (isDead) return; // Jeśli już nie żyje, nie rób tego ponownie
+
+        isDead = true;
+        targetVelocity = Vector2.zero;
+        rb.velocity = Vector2.zero;
+
+        // Trigger animacji
+        if (anim != null)
+        {
+            anim.SetTrigger("dead");
+            anim.SetBool("moving", false); // Dla pewności wyłączamy chodzenie
+        }
+
+        // Zatrzymanie dźwięków kroków
+        if (footstepSource != null) footstepSource.Stop();
+        
+        Debug.Log("Player is dead. Input disabled.");
+    }
+
+    // Opcjonalnie: Metoda do ożywiania
+    [ContextMenu("Revive Player (Test)")]
+    public void Revive()
+    {
+        isDead = false;
+        if (anim != null) anim.Play("Idle"); // Lub inny stan początkowy
+        Debug.Log("Player revived.");
     }
 
     #region INPUT METHODS
