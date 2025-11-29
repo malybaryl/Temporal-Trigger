@@ -52,7 +52,10 @@ public class BulletController : MonoBehaviour
 
     void Update()
     {
-        // Zniszcz pocisk po upływie lifetime
+        // Pocisk porusza się tylko gdy czas płynie (Time.timeScale > 0)
+        // Unity automatycznie obsługuje to przez Rigidbody2D.velocity
+        
+        // Zniszcz pocisk po upływie lifetime (używa Time.time który respektuje timeScale)
         if (lifetime > 0 && Time.time - spawnTime >= lifetime)
         {
             DestroyBullet();

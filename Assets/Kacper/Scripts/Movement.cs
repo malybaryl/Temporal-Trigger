@@ -244,6 +244,13 @@ public class Movement : MonoBehaviour
         float speed = targetVelocity.magnitude;
         bool currentlyMoving = speed >= footstepMinSpeed;
 
+        // *** NOWE: Powiadom TimeController o ruchu gracza ***
+        TimeController timeController = FindObjectOfType<TimeController>();
+        if (timeController != null)
+        {
+            timeController.RegisterPlayerMovement(gameObject, currentlyMoving);
+        }
+
         if (currentlyMoving)
         {
             if (!wasMoving && currentFadeCoroutine != null)
@@ -265,8 +272,9 @@ public class Movement : MonoBehaviour
         else if (wasMoving && !currentlyMoving)
         {
             if (currentFadeCoroutine != null)
+            {
                 StopCoroutine(currentFadeCoroutine);
-
+            }
             currentFadeCoroutine = StartCoroutine(FadeOutLastStep());
         }
 
