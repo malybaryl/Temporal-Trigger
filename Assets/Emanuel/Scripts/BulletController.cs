@@ -108,18 +108,16 @@ public class BulletController : MonoBehaviour
         // ONE-HIT-KILL logic
         // Tutaj zakładam, że masz interfejs IDamageable lub skrypt EnemyHealth
         // Jeśli nie, możesz to zakomentować
-        var damageScript = enemy.GetComponent<MonoBehaviour>(); // Placeholder, podmień na swoje IDamageable
-        if (damageScript != null)
+         // ONE-HIT-KILL: Zniszcz wroga natychmiast
+        if (oneHitKill)
         {
-           // damageScript.TakeDamage(100); 
-           Destroy(enemy.gameObject); // Proste one hit kill jeśli nie masz systemu HP
+            IDamageable damageScript = enemy.GetComponent<IDamageable>();
+            if (damageScript != null)
+            {
+                damageScript.TakeDamage();
+                Debug.Log($"Enemy {enemy.gameObject.name} hit!");
+            }
         }
-        else
-        {
-            Destroy(enemy.gameObject); // Domyślnie niszczy obiekt wroga
-        }
-
-        if (destroyOnHit) DestroyBullet();
     }
 
     void OnHitWall(Collider2D wall)
