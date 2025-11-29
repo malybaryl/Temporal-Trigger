@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 7440982036676214593}
   - component: {fileID: 5228726533123143203}
   - component: {fileID: 1095622556512281320}
+  - component: {fileID: 1074841132883105504}
   m_Layer: 0
   m_Name: Player keyboard
   m_TagString: Player
@@ -142,6 +143,7 @@ MonoBehaviour:
   footstepInterval: 0.4
   lastStepFadeOutDuration: 0
   anim: {fileID: 1095622556512281320}
+  isDead: 0
 --- !u!82 &7440982036676214593
 AudioSource:
   m_ObjectHideFlags: 0
@@ -273,3 +275,21 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1074841132883105504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862339223155736111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c918a5be27e134c7485ea61938142b94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bulletPrefab: {fileID: 1269919646137202416, guid: 7acc0ab870eb44454b98a1813d3a96d6, type: 3}
+  firePoint: {fileID: 0}
+  fireRate: 0.2
+  useNewInputSystem: 1
+  crosshair: {fileID: 0}
+  shootSound: {fileID: 0}
