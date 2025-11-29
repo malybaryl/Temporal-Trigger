@@ -5,28 +5,34 @@ using static AiNavigation;
 
 public class EnemyPathfinding : MonoBehaviour
 {
-    [SerializeField] private AiNavigation aiNavigation; 
+    private AiNavigation aiNavigation;
     [SerializeField] private AiNavigation.Timeline enemyTimeline = AiNavigation.Timeline.Present;
-    [SerializeField] private float speed = 3f;
+    [SerializeField] private float maxSpeed = 3f;
+    [SerializeField] private float acceleration = 5f;
+    private float lerpedSpeed = 0f;
+
+    [SerializeField] private float timeModifier = 1f;
+    public Vector2 movementDirection { get; private set; } = Vector2.zero;
+
 
     private List<Node> path = new List<Node>();
     private int currentPathIndex = 0;
 
     private void Start()
-{
-    GameObject gameManager = GameObject.FindWithTag("GameController");
+    {
+        GameObject gameManager = GameObject.FindWithTag("GameController");
 
-    if (gameManager != null)
-    {
-        aiNavigation = gameManager.GetComponent<AiNavigation>();
-        if (aiNavigation == null)
-            Debug.LogError("Na GameController nie ma komponentu AiNavigation!");
+        if (gameManager != null)
+        {
+            aiNavigation = gameManager.GetComponent<AiNavigation>();
+            if (aiNavigation == null)
+                Debug.LogError("Na GameController nie ma komponentu AiNavigation!");
+        }
+        else
+        {
+            Debug.LogError("Nie znaleziono obiektu z tagiem GameController!");
+        }
     }
-    else
-    {
-        Debug.LogError("Nie znaleziono obiektu z tagiem GameController!");
-    }
-}
 
     void Update()
     {
@@ -53,11 +59,22 @@ public class EnemyPathfinding : MonoBehaviour
     void MoveAlongPath()
     {
         if (path == null || path.Count == 0 || currentPathIndex >= path.Count)
+        {
+            lerpedSpeed = 0;
+            movementDirection = Vector2.zero;
             return;
+        }
 
         Vector2 targetPos = path[currentPathIndex].worldPosition;
-        Vector2 diretion = targetPos - (Vector2)transform.position;
-        transform.position = Vector2.MoveTowards(transform.position, targetPos, speed * Time.deltaTime);
+        Vector2 direction = targetPos - (Vector2)transform.position;
+        movementDirection = direction.normalized;
+
+        // Smooth acceleration
+        lerpedSpeed = Mathf.Clamp(lerpedSpeed + Time.deltaTime * timeModifier * acceleration, 0, maxSpeed);
+
+        float scaledTime = lerpedSpeed * timeModifier;
+
+        transform.position = Vector2.MoveTowards(transform.position, targetPos, scaledTime * Time.deltaTime);
 
         if ((Vector2)transform.position == targetPos)
             currentPathIndex++;
@@ -76,7 +93,7 @@ public class EnemyPathfinding : MonoBehaviour
             for (int y = 0; y < height; y++)
             {
                 Node node = grid[x, y];
-                if (!node.walkable) continue; 
+                if (!node.walkable) continue;
 
                 float dist = Vector2.Distance(worldPos, node.worldPosition);
                 if (dist < shortestDistance)
