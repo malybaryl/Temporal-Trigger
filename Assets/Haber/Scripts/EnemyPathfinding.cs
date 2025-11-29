@@ -11,8 +11,6 @@ public class EnemyPathfinding : MonoBehaviour
     [SerializeField] private float maxSpeed = 3f;
     [SerializeField] private float acceleration = 5f;
     private float lerpedSpeed = 0f;
-
-    private float timeModifier = 1f;
     public Vector2 movementDirection { get; private set; } = Vector2.zero;
 
 
@@ -38,7 +36,7 @@ public class EnemyPathfinding : MonoBehaviour
     void Update()
     {
         if (aiNavigation == null) return;
-            MoveAlongPath();
+        MoveAlongPath();
     }
 
     public void SetPath(Vector2 targetPos)
@@ -64,11 +62,11 @@ public class EnemyPathfinding : MonoBehaviour
         movementDirection = direction.normalized;
 
         // Smooth acceleration
-        lerpedSpeed = Mathf.Clamp(lerpedSpeed + Time.deltaTime * timeModifier * acceleration, 0, maxSpeed);
+        Debug.Log(GameTime.timescale);
+        lerpedSpeed = Mathf.Clamp(lerpedSpeed + Time.deltaTime * acceleration, 0, maxSpeed);
+        float scaledSpeed = lerpedSpeed * GameTime.timescale;
 
-        float scaledTime = lerpedSpeed * timeModifier;
-
-        transform.position = Vector2.MoveTowards(transform.position, targetPos, scaledTime * Time.deltaTime);
+        transform.position = Vector2.MoveTowards(transform.position, targetPos, scaledSpeed * Time.deltaTime * GameTime.timescale);
 
         if ((Vector2)transform.position == targetPos)
             currentPathIndex++;
@@ -191,11 +189,6 @@ public class EnemyPathfinding : MonoBehaviour
             }
         }
         return neighbors;
-    }
-
-    public void SetTimeModifier(float modifier)
-    {
-        this.timeModifier = modifier;
     }
 
     public void ClearPath()

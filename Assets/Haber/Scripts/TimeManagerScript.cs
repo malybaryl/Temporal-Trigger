@@ -1,14 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 static class GameTime
 {
     public static float timescale { private set; get; } = 1f;
 
-    public static void SetTimeScale(float timescale)
+    public static void SetTimeScale(float newScale)
     {
-        timescale = Mathf.Clamp01(timescale);
+        timescale = Mathf.Clamp01(newScale);
     }
 }
 
