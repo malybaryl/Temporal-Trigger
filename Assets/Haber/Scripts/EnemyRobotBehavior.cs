@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 
 public class EnemyRobotBehavior : MonoBehaviour
 {
     private EnemyPathfinding pathfindScript;
-    [SerializeField] float minActivationRange = 15;
+    [SerializeField] float minActivationRange = 10f;
+    [SerializeField] float stopAndFireRange = 5f;
+
     private List<GameObject> players = new List<GameObject>();
     private Transform targetPlayer;
     private Animator animator;
@@ -34,44 +37,56 @@ public class EnemyRobotBehavior : MonoBehaviour
     private void Update()
     {
         float y = pathfindScript.movementDirection.y;
-        int verticalSign = 0;
 
-        float threshold = 0.01f;
-        if (y > threshold)
-            verticalSign = 1;
-        else if (y < -threshold)
-            verticalSign = -1;
+        int verticalSign = GetVerticalSign(pathfindScript.movementDirection);
 
         Transform targetPlayer = GetNearestPlayerInRange();
         animator.SetInteger("moveDirection", verticalSign);
         pathfindScript.SetTimeModifier(timeModifier);
         animator.speed = timeModifier;
 
-
+        bool seePlayer = false;
         if (players.Count > 0)
         {
-            Transform nearestPlayer = GetNearestPlayerInRange();
-            if (nearestPlayer == null)
-                return;
-
-            Vector2 dir = (nearestPlayer.position - transform.position).normalized;
-            float dist = Vector2.Distance(transform.position, nearestPlayer.position);
-
-            RaycastHit2D hit = Physics2D.Raycast(
-                transform.position,
-                dir,
-                dist,
-                visionMask
-            );
-
-            if (hit.collider != null)
+            if (targetPlayer != null)
             {
-                if (hit.collider.CompareTag("Player"))
+                Vector2 dir = (targetPlayer.position - transform.position).normalized;
+                float dist = Vector2.Distance(transform.position, targetPlayer.position);
+
+                RaycastHit2D hit = Physics2D.Raycast(
+                    transform.position,
+                    dir,
+                    dist,
+                    visionMask
+                );
+
+                if (hit.collider != null)
                 {
-                    //hit
+                    if (hit.collider.CompareTag("Player"))
+                    {
+                        float distanceToCollider = Vector2.Distance(transform.position, hit.collider.transform.position);
+                        if (distanceToCollider < stopAndFireRange)
+                            pathfindScript.ClearPath();
+                        seePlayer = true;
+                    }
                 }
             }
         }
+
+        if (targetPlayer != null)
+        {
+            float distanceToNearest = Vector2.Distance(targetPlayer.transform.position, transform.position);
+            if (distanceToNearest > stopAndFireRange || !seePlayer)
+                pathfindScript.SetPath(targetPlayer.transform.position);
+            else
+            {
+                pathfindScript.ClearPath();
+                verticalSign = GetVerticalSign(targetPlayer.transform.position - transform.position);
+                animator.SetInteger("moveDirection", verticalSign);
+            }
+        }
+        else
+            pathfindScript.ClearPath();
     }
 
 
@@ -103,5 +118,18 @@ public class EnemyRobotBehavior : MonoBehaviour
             }
         }
         return targetPlayer;
+    }
+
+    private int GetVerticalSign(Vector2 vector)
+    {
+        int verticalSign = 0;
+
+        float threshold = 0.01f;
+        if (vector.y > threshold)
+            verticalSign = 1;
+        else if (vector.y < -threshold)
+            verticalSign = -1;
+
+        return verticalSign;
     }
 }

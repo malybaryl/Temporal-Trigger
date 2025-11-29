@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using static AiNavigation;
 
@@ -37,23 +38,16 @@ public class EnemyPathfinding : MonoBehaviour
     void Update()
     {
         if (aiNavigation == null) return;
-
-        Vector2 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        PathFindTo(mouseWorldPos);
+            MoveAlongPath();
     }
 
-
-    public void PathFindTo(Vector2 targetPos)
+    public void SetPath(Vector2 targetPos)
     {
         Node[,] grid = aiNavigation.GetGridRef(enemyTimeline).nodes;
         Node startNode = GetClosestNode(transform.position, grid);
         Node targetNode = GetClosestNode(targetPos, grid);
-        if (Input.GetMouseButtonDown(0))
-        {
-            path = FindPath(startNode, targetNode, grid);
-            currentPathIndex = 0;
-        }
-        MoveAlongPath();
+        path = FindPath(startNode, targetNode, grid);
+        currentPathIndex = 0;
     }
 
     void MoveAlongPath()
@@ -202,5 +196,10 @@ public class EnemyPathfinding : MonoBehaviour
     public void SetTimeModifier(float modifier)
     {
         this.timeModifier = modifier;
+    }
+
+    public void ClearPath()
+    {
+        path = null;
     }
 }
