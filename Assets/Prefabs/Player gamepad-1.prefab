@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 4586614742001551335}
   - component: {fileID: 5994852918335909757}
   - component: {fileID: 2232532574474203244}
+  - component: {fileID: 2210547480465323916}
   m_Layer: 8
   m_Name: Player gamepad-1
   m_TagString: Player
@@ -142,6 +143,8 @@ MonoBehaviour:
   footstepInterval: 0.4
   lastStepFadeOutDuration: 0
   anim: {fileID: 4586614742001551335}
+  isFacingRight: 1
+  fixFrontRotation: 1
   isDead: 0
 --- !u!95 &4586614742001551335
 Animator:
@@ -295,3 +298,22 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0}
   m_Size: {x: 0.2, y: 0.5}
   m_Direction: 0
+--- !u!114 &2210547480465323916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862661911384055546}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c918a5be27e134c7485ea61938142b94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bulletPrefab: {fileID: 1269919646137202416, guid: 7acc0ab870eb44454b98a1813d3a96d6, type: 3}
+  firePoint: {fileID: 0}
+  baseFireRate: 0.3
+  minFireDelay: 0.15
+  useNewInputSystem: 1
+  crosshair: {fileID: 0}
+  shootSound: {fileID: 0}
