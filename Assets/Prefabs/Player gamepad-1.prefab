@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6295264154113971451}
   - component: {fileID: 7652867052613036030}
   - component: {fileID: 1513598662601453281}
+  - component: {fileID: 4586614742001551335}
   m_Layer: 0
   m_Name: Player gamepad-1
   m_TagString: Player
@@ -138,3 +139,25 @@ MonoBehaviour:
   footstepMinSpeed: 0.1
   footstepInterval: 0.4
   lastStepFadeOutDuration: 0
+  anim: {fileID: 4586614742001551335}
+--- !u!95 &4586614742001551335
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862661911384055546}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2ce8326274b53654ebe845926ac5428c, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
