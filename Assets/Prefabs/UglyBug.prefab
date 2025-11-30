@@ -122,7 +122,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f82d6b51777852045bbcff073c9f555d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyTimeline: 0
+  enemyTimeline: 1
   maxSpeed: 2
   acceleration: 3
 --- !u!114 &7033961159047791559
