@@ -10,7 +10,7 @@ public class MainMenu : MonoBehaviour
 
     public void PlayCoop()
     {
-        SceneManager.LoadScene("Kacper"); // nazwa sceny coop
+        SceneManager.LoadScene("Co-op"); // nazwa sceny coop
     }
 
     public void QuitGame()
