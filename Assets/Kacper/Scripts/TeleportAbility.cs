@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Prosta mechanika teleportu góra/dó³ (Toggle).
-/// Przycisk E (Klawiatura) lub X (Gamepad Xbox) / Kwadrat (Gamepad PS).
+/// U¿ywa statycznej klasy TeleportState do synchronizacji.
 /// </summary>
 public class TeleportAbility : MonoBehaviour
 {
@@ -18,11 +18,17 @@ public class TeleportAbility : MonoBehaviour
     public int gamepadIndex = 0;
     public bool useGamepadByIndex = true;
 
-    // Zmienna przechowuj¹ca stan: czy jesteœmy obecnie "na dole"?
-    private bool isTeleportedDown = false;
-
-    // POPRAWKA 1: Transform z du¿ej litery (Typ zmiennej)
+    [Header("Co-op Settings")]
+    [Tooltip("Przypisz tutaj transform drugiego gracza, aby ruszaæ siê razem")]
     [SerializeField] private Transform additionalTransform;
+
+    // To wykonuje siê raz przy starcie gry
+    void Start()
+    {
+        // NAPRAWA B£ÊDU: Inicjalizacja stanu musi byæ w metodzie, nie w ciele klasy
+        // Ustawiamy stan pocz¹tkowy na false (góra)
+        TeleportState.changeState(false);
+    }
 
     void Update()
     {
@@ -34,19 +40,19 @@ public class TeleportAbility : MonoBehaviour
         bool inputTriggered = false;
 
 #if ENABLE_INPUT_SYSTEM
-        // 1. SprawdŸ Gamepada (zachowuj¹c hierarchiê indeksów)
+        // 1. SprawdŸ Gamepada
         Gamepad myGamepad = GetGamepad();
 
         if (myGamepad != null)
         {
-            // ButtonWest to "X" na Xboxie lub "Kwadrat" na PlayStation
+            // X na Xbox / Kwadrat na PS
             if (myGamepad.buttonWest.wasPressedThisFrame)
             {
                 inputTriggered = true;
             }
         }
 
-        // 2. SprawdŸ Klawiaturê (Litera E) - tylko dla Gracza 1 (indeks 0)
+        // 2. SprawdŸ Klawiaturê (tylko Gracz 1)
         if (gamepadIndex == 0 && Keyboard.current != null)
         {
             if (Keyboard.current.eKey.wasPressedThisFrame)
@@ -65,28 +71,37 @@ public class TeleportAbility : MonoBehaviour
 
     void PerformTeleport()
     {
+        // Tworzymy wektor przesuniêcia (np. 0, 3, 0)
         Vector3 moveVector = new Vector3(0, teleportDistance, 0);
 
-        if (isTeleportedDown)
+        // Pobieramy aktualny stan ze statycznej klasy
+        if (TeleportState.get()) 
         {
-            // SYTUACJA: Jesteœmy na dole -> Wracamy do GÓRY
+            // === SYTUACJA: STAN TRUE (JESTEŒMY NA DOLE) -> LECIMY DO GÓRY ===
+            
+            // Przesuñ gracza w górê (+)
             transform.position += moveVector;
             
+            // Przesuñ drugiego gracza w górê (+)
             if (additionalTransform != null) 
                 additionalTransform.position += moveVector;
             
-            isTeleportedDown = false;
+            // Zmieñ stan na false (jesteœmy na górze)
+            TeleportState.changeState(false);
         }
         else
         {
-            // SYTUACJA: Jesteœmy na górze -> Lecimy w DÓ£
+            // === SYTUACJA: STAN FALSE (JESTEŒMY NA GÓRZE) -> LECIMY W DÓ£ ===
+            
+            // Przesuñ gracza w dó³ (-)
             transform.position -= moveVector;
             
-            // POPRAWKA 2: Tutaj te¿ musimy odejmowaæ (-=), ¿eby obiekt lecia³ w dó³ razem z graczem
+            // Przesuñ drugiego gracza w dó³ (-)
             if (additionalTransform != null) 
                 additionalTransform.position -= moveVector;
             
-            isTeleportedDown = true;
+            // Zmieñ stan na true (jesteœmy na dole)
+            TeleportState.changeState(true);
         }
     }
 
