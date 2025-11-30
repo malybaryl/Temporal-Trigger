@@ -110,7 +110,7 @@ public class Movement : MonoBehaviour
     {
         // --- BLOKADA RUCHU JEŚLI MARTWY ---
        // --- PODMIEŃ WARUNEK NA GÓRZE ---
-        if (PlayerState.IsDead) return; 
+        if (PlayerDead.get()) return; 
         // --------------------------------
 
         Vector2 input = GetInput();
@@ -131,7 +131,7 @@ public class Movement : MonoBehaviour
     void FixedUpdate()
     {
         // --- ZATRZYMANIE FIZYKI JEŚLI MARTWY ---
-        if (PlayerState.IsDead)
+        if (PlayerDead.get())
         {
             rb.velocity = Vector2.zero;
             return;
@@ -215,10 +215,11 @@ public class Movement : MonoBehaviour
     public void Die()
     {
         // Sprawdzamy globalny stan
-        if (PlayerState.IsDead) return; 
+        if (PlayerDead.get()) return; 
 
         // Ustawiamy globalny stan na true -> to uruchomi Game Over
-        PlayerState.IsDead = true;
+        PlayerDead.set(true);
+        GameController.dead = true;
 
         targetVelocity = Vector2.zero;
         rb.velocity = Vector2.zero;
@@ -240,7 +241,7 @@ public class Movement : MonoBehaviour
     {
         // Resetujemy globalny stan
         PlayerState.Reset();
-        
+        PlayerDead.set(false);
         if (anim != null) anim.Play("Idle"); 
         Debug.Log("Player revived.");
     }

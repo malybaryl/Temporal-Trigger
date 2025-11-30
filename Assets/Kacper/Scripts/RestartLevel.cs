@@ -10,14 +10,15 @@ public class RestartLevel_ : MonoBehaviour
     {
         // 1. Zresetuj stan gracza (wa¿ne!)
         PlayerState.Reset();
+
+        // 2. WA¯NE: Zresetuj stan GameControllera (¿eby ukryæ panel)
+        GameController.dead = false; 
         
-        // 2. Pobierz nazwê aktywnej sceny
-        string currentSceneName = SceneManager.GetActiveScene().name;
-        
-        // 3. Za³aduj j¹ ponownie
-        SceneManager.LoadScene(currentSceneName);
-        
-        // Opcjonalnie: Przywróæ czas, jeœli by³ zatrzymany
+        // 3. Przywróæ czas (musi byæ przed za³adowaniem sceny, dla pewnoœci)
         Time.timeScale = 1f; 
+
+        // 4. Pobierz nazwê aktywnej sceny i za³aduj j¹ ponownie
+        string currentSceneName = SceneManager.GetActiveScene().name;
+        SceneManager.LoadScene(currentSceneName);
     }
 }
