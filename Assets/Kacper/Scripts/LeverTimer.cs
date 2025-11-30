@@ -29,7 +29,7 @@ public class LevelTimer : MonoBehaviour
         {
             // WA¯NE: U¿ywamy unscaledDeltaTime, ¿eby liczyæ czas REALNY
             // (nawet jak gra jest w slow-motion)
-            elapsedTime += Time.unscaledDeltaTime;
+            elapsedTime += Time.unscaledDeltaTime * GameTime.timescale;
 
             UpdateTimerUI();
         }
