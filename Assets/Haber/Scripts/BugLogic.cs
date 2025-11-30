@@ -1,20 +1,15 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.UIElements;
 
-public class EnemyRobotBehavior : MonoBehaviour, IDamageable
+public class BugLogic : MonoBehaviour, IDamageable
 {
     private EnemyPathfinding pathfindScript;
-    private RobotAttack attackScript;
+    private BugAttack attackScript;
     private AudioSource audioSource;
     [SerializeField] private AudioClip deathClip;
 
-
-    [SerializeField] float minActivationRange = 10f;
-    [SerializeField] float stopAndFireRange = 5f;
+    [SerializeField] float maxAttackRange = 7f;
 
     private List<GameObject> players = new List<GameObject>();
     private Transform targetPlayer;
@@ -37,7 +32,7 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
             Debug.LogWarning("Nie znaleziono animatora!");
 
 
-        attackScript = GetComponent<RobotAttack>();
+        attackScript = GetComponent<BugAttack>();
         if (attackScript == null)
             Debug.LogWarning("Nie znaleziono AttackScript");
 
@@ -87,7 +82,7 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
                     if (hit.collider.CompareTag("Player"))
                     {
                         float distanceToCollider = Vector2.Distance(transform.position, hit.collider.transform.position);
-                        if (distanceToCollider < stopAndFireRange)
+                        if (distanceToCollider > maxAttackRange)
                             pathfindScript.ClearPath();
                         seePlayer = true;
                     }
@@ -98,17 +93,19 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
         if (targetPlayer != null)
         {
             float distanceToNearest = Vector2.Distance(targetPlayer.transform.position, transform.position);
-            if (distanceToNearest > stopAndFireRange || !seePlayer)
+            pathfindScript.SetPath(targetPlayer.transform.position);
+            if (distanceToNearest < maxAttackRange )
             {
                 pathfindScript.SetPath(targetPlayer.transform.position);
-                attackScript.SetAllowFire(targetPlayer.transform, false, verticalSign);
+                if (seePlayer)
+                    attackScript.SetAllowFire(targetPlayer.transform,true, verticalSign);
+                else
+                    attackScript.SetAllowFire(targetPlayer.transform, false, verticalSign);
             }
             else
             {
                 pathfindScript.ClearPath();
-                verticalSign = GetVerticalSign(targetPlayer.transform.position - transform.position);
-                animator.SetInteger("moveDirection", verticalSign);
-                attackScript.SetAllowFire(targetPlayer.transform, true, verticalSign);
+                attackScript.SetAllowFire(targetPlayer.transform, false, verticalSign);
             }
         }
         else
@@ -139,7 +136,7 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
         {
             float distance = Vector2.Distance(player.transform.position, transform.position);
 
-            if (distance < minActivationRange && distance < closestDist)
+            if (distance < closestDist)
             {
                 closestDist = distance;
                 targetPlayer = player.transform;
@@ -163,7 +160,7 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
 
     public void TakeDamage()
     {
-        animator.Play("RobotDeath");
+        animator.Play("UglyDeath");
         audioSource.PlayOneShot(deathClip);
         isDying = true;
     }
