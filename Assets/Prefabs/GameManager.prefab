@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5535783903587238172}
   - component: {fileID: 1781100216943964611}
   - component: {fileID: 1111441903412401900}
+  - component: {fileID: 1772948633017452292}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: GameController
@@ -60,16 +61,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2320f7acb13c39d458fa0d4c9b182cb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridWidth: 20
-  gridHeight: 15
-  nodeSize: 0.5
-  presentTimelineCenter: {x: 0, y: 0}
-  futureTimelineCenter: {x: 20, y: 0}
+  gridWidth: 30
+  gridHeight: 20
+  nodeSize: 0.25
+  presentTimelineCenter: {x: 10, y: 10}
+  futureTimelineCenter: {x: 10, y: -90}
   obstacleMask:
     serializedVersion: 2
     m_Bits: 128
-  debugShowGrid: 0
+  debugShowGrid: 1
 --- !u!114 &1111441903412401900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2369340556187937772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f3f0b425707083428eefe330c8a0e5c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1772948633017452292
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
