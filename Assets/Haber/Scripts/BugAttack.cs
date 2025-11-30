@@ -69,6 +69,7 @@ public class BugAttack : MonoBehaviour
         Vector2 leftDir = Quaternion.Euler(0, 0, 15f) * direction;
         Vector2 rightDir = Quaternion.Euler(0, 0, -15f) * direction;
 
+        audioSource.PlayOneShot(fireClip);
         bulletScriptCenter.OnSpawn(direction);
         bulletScriptLeft.OnSpawn(leftDir);
         bulletScriptRight.OnSpawn(rightDir);
