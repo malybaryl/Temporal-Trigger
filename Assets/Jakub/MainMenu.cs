@@ -5,16 +5,19 @@ public class MainMenu : MonoBehaviour
 {
     public void PlaySingle()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        SceneManager.LoadScene("Haber"); // nazwa sceny singleplayer
     }
 
     public void PlayCoop()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 2);
+        SceneManager.LoadScene("Kacper"); // nazwa sceny coop
     }
 
     public void QuitGame()
     {
         Application.Quit();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
 }
