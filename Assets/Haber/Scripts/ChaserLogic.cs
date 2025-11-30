@@ -1,30 +1,27 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.UIElements;
 
-public class EnemyRobotBehavior : MonoBehaviour, IDamageable
+public class ChaserLogic : MonoBehaviour, IDamageable
 {
     private EnemyPathfinding pathfindScript;
-    private RobotAttack attackScript;
+    //private RobotAttack attackScript;
     private AudioSource audioSource;
     [SerializeField] private AudioClip deathClip;
-
-
-    [SerializeField] float minActivationRange = 10f;
-    [SerializeField] float stopAndFireRange = 5f;
-
-    private List<GameObject> players = new List<GameObject>();
-    private Transform targetPlayer;
-    private Animator animator;
-
-    [SerializeField] private float timeModifier = 1f;
+    [SerializeField] private AudioClip damageClip;
+    [SerializeField] private AudioClip activateClip;
     [SerializeField] private LayerMask visionMask;
 
+    private List<GameObject> players = new List<GameObject>();
+    private Animator animator;
     private int verticalSign = 0;
     bool isDying = false;
+    private bool sawPlayer = false;
+
+    private int hp = 3;
+
+    private float gracePeroidMs = 250f;
+    private float graceMs;
 
     private void Awake()
     {
@@ -32,32 +29,28 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
         if (pathfindScript == null)
             Debug.LogWarning("Nie znaleziono EnemyPathfinding!");
 
-        animator = GetComponent<Animator>();
-        if (animator == null)
-            Debug.LogWarning("Nie znaleziono animatora!");
-
-
-        attackScript = GetComponent<RobotAttack>();
-        if (attackScript == null)
-            Debug.LogWarning("Nie znaleziono AttackScript");
-
         audioSource = GetComponent<AudioSource>();
+        graceMs = 0;
     }
 
     private void Start()
     {
         AddPlayersToTargetList();
+        animator = GetComponent<Animator>();
+        if (animator == null)
+            Debug.LogWarning("Nie znaleziono animatora!");
     }
-
 
     private void Update()
     {
         if (isDying)
         {
             pathfindScript.ClearPath();
-            attackScript.SetAllowFire(null, false, verticalSign);
             return;
         }
+
+        graceMs -= Time.deltaTime * GameTime.timescale * 1000;
+
 
         float y = pathfindScript.movementDirection.y;
 
@@ -67,7 +60,6 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
         animator.SetInteger("moveDirection", verticalSign);
         animator.speed = GameTime.timescale;
 
-        bool seePlayer = false;
         if (players.Count > 0)
         {
             if (targetPlayer != null)
@@ -84,39 +76,21 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
 
                 if (hit.collider != null)
                 {
-                    if (hit.collider.CompareTag("Player"))
+                    if (hit.collider.CompareTag("Player") && !sawPlayer)
                     {
-                        float distanceToCollider = Vector2.Distance(transform.position, hit.collider.transform.position);
-                        if (distanceToCollider < stopAndFireRange)
-                            pathfindScript.ClearPath();
-                        seePlayer = true;
+                        audioSource.PlayOneShot(activateClip);
+                        sawPlayer = true;
                     }
                 }
             }
         }
 
-        if (targetPlayer != null)
+        if (targetPlayer != null && sawPlayer)
         {
-            float distanceToNearest = Vector2.Distance(targetPlayer.transform.position, transform.position);
-            if (distanceToNearest > stopAndFireRange || !seePlayer)
-            {
-                pathfindScript.SetPath(targetPlayer.transform.position);
-                attackScript.SetAllowFire(targetPlayer.transform, false, verticalSign);
-            }
-            else
-            {
-                pathfindScript.ClearPath();
-                verticalSign = GetVerticalSign(targetPlayer.transform.position - transform.position);
-                animator.SetInteger("moveDirection", verticalSign);
-                attackScript.SetAllowFire(targetPlayer.transform, true, verticalSign);
-            }
-        }
-        else
-        {
-            pathfindScript.ClearPath();
-            attackScript.SetAllowFire(null, false, verticalSign);
+            pathfindScript.SetPath(targetPlayer.transform.position);
         }
     }
+
 
     private void AddPlayersToTargetList()
     {
@@ -139,11 +113,8 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
         {
             float distance = Vector2.Distance(player.transform.position, transform.position);
 
-            if (distance < minActivationRange && distance < closestDist)
-            {
-                closestDist = distance;
-                targetPlayer = player.transform;
-            }
+            closestDist = distance;
+            targetPlayer = player.transform;
         }
         return targetPlayer;
     }
@@ -163,13 +134,49 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
 
     public void TakeDamage()
     {
-        animator.Play("RobotDeath");
-        audioSource.PlayOneShot(deathClip);
-        isDying = true;
+        if (isDying)
+            return;
+
+        if (graceMs <= 0)
+        {
+            graceMs = gracePeroidMs;
+
+            Debug.Log("take damage");
+            hp--;
+
+            if (hp <= 0)
+            {
+                animator.Play("EvilDeath");
+                audioSource.PlayOneShot(deathClip);
+                isDying = true;
+            }
+            else
+            {
+                animator.Play("EvilDamage");
+                audioSource.PlayOneShot(damageClip);
+                pathfindScript.ResetSpeed();
+            }
+        }
     }
 
     public void OnDeathFinish()
     {
         Destroy(this.gameObject);
+    }
+
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Player"))
+        {
+            OnHitPlayer(collision);
+            return;
+        }
+    }
+
+    private void OnHitPlayer(Collider2D playerCol)
+    {
+        Movement player = playerCol.GetComponent<Movement>();
+        if (player != null)
+            player.Die();
     }
 }

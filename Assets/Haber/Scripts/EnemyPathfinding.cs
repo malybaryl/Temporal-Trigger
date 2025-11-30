@@ -61,8 +61,6 @@ public class EnemyPathfinding : MonoBehaviour
         Vector2 direction = targetPos - (Vector2)transform.position;
         movementDirection = direction.normalized;
 
-        // Smooth acceleration
-        Debug.Log(GameTime.timescale);
         lerpedSpeed = Mathf.Clamp(lerpedSpeed + Time.deltaTime * acceleration, 0, maxSpeed);
         float scaledSpeed = lerpedSpeed * GameTime.timescale;
 
@@ -194,5 +192,10 @@ public class EnemyPathfinding : MonoBehaviour
     public void ClearPath()
     {
         path = null;
+    }
+
+    public void ResetSpeed()
+    {
+        lerpedSpeed = 0;
     }
 }

@@ -8,7 +8,12 @@ public class EnemyBullet : MonoBehaviour
     private float angularOffset = 10f;
     private Vector2 direction = Vector2.zero;
     private float lifetime = 5f;
-    
+    private Animator animator;
+
+    private void Start()
+    {
+        animator = GetComponent<Animator>();
+    }
     public void OnSpawn(Vector2 spawnDirection)
     {
         float randomAngle = Random.Range(-angularOffset, angularOffset);
@@ -18,6 +23,7 @@ public class EnemyBullet : MonoBehaviour
 
     private void Update()
     {
+        animator.speed = GameTime.timescale;
         transform.position = transform.position + (Vector3)direction * speed * GameTime.timescale * Time.deltaTime;
         lifetime -= Time.deltaTime * GameTime.timescale;
 
