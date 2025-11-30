@@ -6,6 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/MainScene.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
+    path: Assets/Jakub/TemporalTrigger_Menu.unity
+    guid: dce63f77f429888458ee455aa8bcb307
+  - enabled: 1
+    path: Assets/Scenes/Kacper.unity
+    guid: 8375be9e5063dff4e9cdfe88a33e226f
+  - enabled: 1
+    path: Assets/Scenes/Haber.unity
+    guid: 01cd8e24c977e7a4f8b3277ce09ce3cb
   m_configObjects: {}
