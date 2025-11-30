@@ -30321,7 +30321,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5401828575992761974, guid: 520c8a5a24eda674bac98fd1efcdfb71, type: 3}
       propertyPath: orthographic size
-      value: 4.7513266
+      value: 2.8125
       objectReference: {fileID: 0}
     - target: {fileID: 6238082012091097542, guid: 520c8a5a24eda674bac98fd1efcdfb71, type: 3}
       propertyPath: m_LocalPosition.x
@@ -44607,7 +44607,7 @@ MonoBehaviour:
   - {fileID: 1832399438}
   enemyPrefabs:
   - {fileID: 7283019162896316261, guid: 2301ee8b47d168d49a880d96b87bffee, type: 3}
-  spawnInterval: 5
+  spawnInterval: 10
 --- !u!4 &1668719098
 Transform:
   m_ObjectHideFlags: 0
@@ -51085,7 +51085,7 @@ MonoBehaviour:
   enemyPrefabs:
   - {fileID: 5626672739019637437, guid: 432864baee75fb24ab08836b1fc907d7, type: 3}
   - {fileID: 5805373403972286928, guid: 9fef3d57e7a076a47afcf0e74e40f588, type: 3}
-  spawnInterval: 5
+  spawnInterval: 10
 --- !u!4 &1858622663
 Transform:
   m_ObjectHideFlags: 0
