@@ -94,19 +94,24 @@ public class Movement : MonoBehaviour
 
     void Awake()
     {
+        // --- DODAJ TO NA POCZĄTKU ---
+        PlayerState.Reset();
+        // ----------------------------
+
         rb = GetComponent<Rigidbody2D>();
         if (rb == null) rb = gameObject.AddComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
         rb.constraints = RigidbodyConstraints2D.FreezeRotation;
 
-        // Pobranie głównej kamery do obliczeń pozycji myszki
         mainCamera = Camera.main;
     }
 
     void Update()
     {
         // --- BLOKADA RUCHU JEŚLI MARTWY ---
-        if (isDead) return; 
+       // --- PODMIEŃ WARUNEK NA GÓRZE ---
+        if (PlayerState.IsDead) return; 
+        // --------------------------------
 
         Vector2 input = GetInput();
         input = Vector2.ClampMagnitude(input, 1f);
@@ -126,11 +131,12 @@ public class Movement : MonoBehaviour
     void FixedUpdate()
     {
         // --- ZATRZYMANIE FIZYKI JEŚLI MARTWY ---
-        if (isDead)
+        if (PlayerState.IsDead)
         {
             rb.velocity = Vector2.zero;
             return;
         }
+        // --------------------------------
 
         if (smoothMovement)
         {
@@ -205,13 +211,15 @@ public class Movement : MonoBehaviour
         transform.localScale = theScale;
     }
 
-    // --- METODA DO ZABIJANIA ---
     [ContextMenu("Kill Player (Test)")] 
     public void Die()
     {
-        if (isDead) return; 
+        // Sprawdzamy globalny stan
+        if (PlayerState.IsDead) return; 
 
-        isDead = true;
+        // Ustawiamy globalny stan na true -> to uruchomi Game Over
+        PlayerState.IsDead = true;
+
         targetVelocity = Vector2.zero;
         rb.velocity = Vector2.zero;
 
@@ -224,15 +232,15 @@ public class Movement : MonoBehaviour
 
         if (footstepSource != null) footstepSource.Stop();
         
-        Debug.Log("Player is dead. Input disabled.");
-
-        GetComponent<PlayerDeathSound>().PlayDeath();
+        Debug.Log("Player died. PlayerState.IsDead is now true.");
     }
 
     [ContextMenu("Revive Player (Test)")]
     public void Revive()
     {
-        isDead = false;
+        // Resetujemy globalny stan
+        PlayerState.Reset();
+        
         if (anim != null) anim.Play("Idle"); 
         Debug.Log("Player revived.");
     }
