@@ -99,4 +99,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   useNewInputSystem: 1
   gamepadCrosshairDistance: 5
+  gamepadIndex: 0
+  useGamepadByIndex: 1
+  useGamepadAutoAim: 1
+  autoAimRange: 10
+  autoAimSmoothing: 15
   playerTransform: {fileID: 0}
