@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 5438078897535772268}
   - component: {fileID: 6125770274081984130}
   - component: {fileID: 8965703860635761227}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: UglyBug
   m_TagString: Enemy
   m_Icon: {fileID: 0}

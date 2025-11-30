@@ -30,6 +30,7 @@ public class BugAttack : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        audioSource.pitch = GameTime.timescale;
         if (currFireCooldownMs <= 0)
         {
             currFireCooldownMs = defaultFireCooldownMs;

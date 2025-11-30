@@ -225,6 +225,8 @@ public class Movement : MonoBehaviour
         if (footstepSource != null) footstepSource.Stop();
         
         Debug.Log("Player is dead. Input disabled.");
+
+        GetComponent<PlayerDeathSound>().PlayDeath();
     }
 
     [ContextMenu("Revive Player (Test)")]

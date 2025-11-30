@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 3799741512488346498}
   - component: {fileID: 2932679076757508185}
   - component: {fileID: 7899156771687972818}
+  - component: {fileID: -6168747870219048144}
   m_Layer: 8
   m_Name: Player keyboard
   m_TagString: Player
@@ -311,13 +312,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c918a5be27e134c7485ea61938142b94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gamepadIndex: 0
-  useGamepadByIndex: 1
   bulletPrefab: {fileID: 1269919646137202416, guid: 7acc0ab870eb44454b98a1813d3a96d6, type: 3}
   firePoint: {fileID: 2197313573230439456}
-  bulletForce: 20
-  fireRate: 0.2
-  crosshairController: {fileID: 0}
+  baseFireRate: 0.5
+  minFireDelay: 0.2
+  useNewInputSystem: 1
+  gamepadIndex: 0
+  useGamepadByIndex: 1
+  crosshair: {fileID: 0}
+  shootSound: {fileID: 8300000, guid: 01d42202a0ede2843bee1c04ec1f9e3e, type: 3}
+  showDebugLogs: 1
 --- !u!114 &7899156771687972818
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -333,3 +337,17 @@ MonoBehaviour:
   teleportDistance: 100
   gamepadIndex: 0
   useGamepadByIndex: 1
+  additionalTransform: {fileID: 0}
+--- !u!114 &-6168747870219048144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862339223155736111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5921da4c3c7498408f1d4d2e0130c6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deathClip: {fileID: 8300000, guid: 82c0c91b673ecae449534d1d6e2cf6b9, type: 3}

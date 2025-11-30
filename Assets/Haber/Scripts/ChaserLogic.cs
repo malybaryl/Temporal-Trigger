@@ -43,6 +43,7 @@ public class ChaserLogic : MonoBehaviour, IDamageable
 
     private void Update()
     {
+        audioSource.pitch = GameTime.timescale;
         if (isDying)
         {
             pathfindScript.ClearPath();

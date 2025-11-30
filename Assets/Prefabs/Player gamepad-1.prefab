@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 5994852918335909757}
   - component: {fileID: 2232532574474203244}
   - component: {fileID: 2210547480465323916}
+  - component: {fileID: -1225511093354414885}
   m_Layer: 8
   m_Name: Player gamepad-1
   m_TagString: Player
@@ -178,7 +179,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -315,5 +316,21 @@ MonoBehaviour:
   baseFireRate: 0.3
   minFireDelay: 0.15
   useNewInputSystem: 1
+  gamepadIndex: 0
+  useGamepadByIndex: 1
   crosshair: {fileID: 0}
-  shootSound: {fileID: 0}
+  shootSound: {fileID: 8300000, guid: 01d42202a0ede2843bee1c04ec1f9e3e, type: 3}
+  showDebugLogs: 1
+--- !u!114 &-1225511093354414885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862661911384055546}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5921da4c3c7498408f1d4d2e0130c6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deathClip: {fileID: 8300000, guid: 82c0c91b673ecae449534d1d6e2cf6b9, type: 3}

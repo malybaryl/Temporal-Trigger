@@ -52,6 +52,7 @@ public class EnemyRobotBehavior : MonoBehaviour, IDamageable
 
     private void Update()
     {
+        audioSource.pitch = GameTime.timescale;
         if (isDying)
         {
             pathfindScript.ClearPath();

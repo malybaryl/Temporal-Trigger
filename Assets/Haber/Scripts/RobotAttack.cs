@@ -33,6 +33,7 @@ public class RobotAttack : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        audioSource.pitch = GameTime.timescale;
         if (currFireCooldownMs <= 0)
         {
             currFireCooldownMs = defaultFireCooldownMs;
