@@ -21,6 +21,9 @@ public class TeleportAbility : MonoBehaviour
     // Zmienna przechowuj¹ca stan: czy jesteœmy obecnie "na dole"?
     private bool isTeleportedDown = false;
 
+    // POPRAWKA 1: Transform z du¿ej litery (Typ zmiennej)
+    [SerializeField] private Transform additionalTransform;
+
     void Update()
     {
         HandleInput();
@@ -44,8 +47,6 @@ public class TeleportAbility : MonoBehaviour
         }
 
         // 2. SprawdŸ Klawiaturê (Litera E) - tylko dla Gracza 1 (indeks 0)
-        // Zapobiega sytuacji, gdzie Gracz 2 naciska E na klawiaturze i teleportuje obu, 
-        // lub teleportuje Gracza 2 który ma graæ tylko na padzie.
         if (gamepadIndex == 0 && Keyboard.current != null)
         {
             if (Keyboard.current.eKey.wasPressedThisFrame)
@@ -64,19 +65,28 @@ public class TeleportAbility : MonoBehaviour
 
     void PerformTeleport()
     {
+        Vector3 moveVector = new Vector3(0, teleportDistance, 0);
+
         if (isTeleportedDown)
         {
             // SYTUACJA: Jesteœmy na dole -> Wracamy do GÓRY
-            transform.position += new Vector3(0, teleportDistance, 0);
+            transform.position += moveVector;
+            
+            if (additionalTransform != null) 
+                additionalTransform.position += moveVector;
+            
             isTeleportedDown = false;
-            // Debug.Log("Teleport UP (Powrót)");
         }
         else
         {
             // SYTUACJA: Jesteœmy na górze -> Lecimy w DÓ£
-            transform.position -= new Vector3(0, teleportDistance, 0);
+            transform.position -= moveVector;
+            
+            // POPRAWKA 2: Tutaj te¿ musimy odejmowaæ (-=), ¿eby obiekt lecia³ w dó³ razem z graczem
+            if (additionalTransform != null) 
+                additionalTransform.position -= moveVector;
+            
             isTeleportedDown = true;
-            // Debug.Log("Teleport DOWN");
         }
     }
 
